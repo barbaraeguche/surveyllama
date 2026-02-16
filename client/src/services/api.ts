@@ -1,6 +1,14 @@
+import type {
+  CreateSurveyRequest,
+  SendInvitationsRequest,
+  SubmitResponseRequest,
+  Survey,
+  SurveyAnalytics,
+  UpdateSurveyRequest
+} from "@/lib/definitions";
 import axios from "axios";
 
-const BACKEND_URL = import.meta.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
@@ -8,16 +16,18 @@ const api = axios.create({
   headers: { "Content-Type": "application/json", }
 });
 
-// participant endpoints
-export const participantApi = {
-  submitResult: () => api.post("/submit-result", null),
-};
-
 // administrator endpoints
 export const administratorApi = {
-  createSurvey: () => api.post("/create-survey", null),
-  updateQuestions: () => api.patch("/update-questions", null),
-  publishSurvey: () => api.post("/publish-survey", null),
-  sendEmailNotifs: () => api.post("/send-email-notification", null),
-  viewResults: () => api.get("/view-results"),
+  getSurveys: () => api.get<Survey[]>("/surveys"),
+  createSurvey: (data: CreateSurveyRequest) => api.post<Survey>("/surveys", data),
+  updateSurvey: (id: string, data: UpdateSurveyRequest) => api.patch<Survey>(`/surveys/${id}`, data),
+  publishSurvey: (id: string) => api.post<Survey>(`/surveys/${id}/publish`),
+  sendInvitations: (id: string, data: SendInvitationsRequest) => api.post(`/surveys/${id}/invitations`, data),
+  getAnalytics: (id: string) => api.get<SurveyAnalytics>(`/surveys/${id}/analytics`),
+};
+
+// participant endpoints
+export const participantApi = {
+  getSurvey: (id: string, token: string) => api.get<Survey>(`/surveys/${id}?token=${token}`),
+  submitResponse: (id: string, data: SubmitResponseRequest) => api.post(`/surveys/${id}/responses`, data),
 };
