@@ -1,4 +1,6 @@
 // user & authentication
+import type { QuestionType } from "@/utils/constants";
+
 export interface User {
   uid: string;
   email: string;
@@ -6,14 +8,11 @@ export interface User {
 }
 
 // question type
-type QuestionType = "multiple_choice" | "short_answer" | "checkbox" | "rating_scale";
-
 interface BaseQuestion {
   id: string;
   type: QuestionType;
   text: string;
   required: boolean;
-  order: number;
 }
 
 interface MultipleChoiceQuestion extends BaseQuestion {
