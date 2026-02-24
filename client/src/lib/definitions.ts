@@ -8,34 +8,32 @@ export interface User {
 }
 
 // question type
-interface BaseQuestion {
+export interface BaseQuestion {
   id: string;
   type: QuestionType;
   text: string;
   required: boolean;
 }
 
-interface MultipleChoiceQuestion extends BaseQuestion {
+export interface MultipleChoiceQuestion extends BaseQuestion {
   type: "multiple_choice";
   options: string[];
 }
 
-interface ShortAnswerQuestion extends BaseQuestion {
+export interface ShortAnswerQuestion extends BaseQuestion {
   type: "short_answer";
   maxLength?: number;
 }
 
-interface CheckboxQuestion extends BaseQuestion {
+export interface CheckboxQuestion extends BaseQuestion {
   type: "checkbox";
   options: string[];
 }
 
-interface RatingScaleQuestion extends BaseQuestion {
+export interface RatingScaleQuestion extends BaseQuestion {
   type: "rating_scale";
   minValue: number;
   maxValue: number;
-  minLabel?: string;
-  maxLabel?: string;
 }
 
 type Question = MultipleChoiceQuestion | ShortAnswerQuestion | CheckboxQuestion | RatingScaleQuestion;

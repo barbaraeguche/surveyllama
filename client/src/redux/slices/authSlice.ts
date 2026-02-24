@@ -1,6 +1,6 @@
 import type { User } from "@/lib/definitions";
 import type { ThunkError, ThunkStatus } from "@/lib/types";
-import { login, logout } from "@/redux/thunks/authThunk";
+// import { login, logout } from "@/redux/thunks/authThunk";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
@@ -23,25 +23,25 @@ export const authSlice = createSlice({
       state.user = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    builder
-      .addCase(login.pending, (state) => {
-        state.status = "pending";
-        state.error = null;
-      })
-      .addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
-        state.status = "fulfilled";
-        state.user = action.payload;
-      })
-      .addCase(login.rejected, (state, action) => {
-        state.status = "rejected";
-        state.error = action.error.message || "Login failed";
-      })
-      
-      .addCase(logout.fulfilled, (state) => {
-        state.user = null;
-      });
-  },
+  // extraReducers: (builder) => {
+  //   builder
+  //     .addCase(login.pending, (state) => {
+  //       state.status = "pending";
+  //       state.error = null;
+  //     })
+  //     .addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
+  //       state.status = "fulfilled";
+  //       state.user = action.payload;
+  //     })
+  //     .addCase(login.rejected, (state, action) => {
+  //       state.status = "rejected";
+  //       state.error = action.error.message || "Login failed";
+  //     })
+  //
+  //     .addCase(logout.fulfilled, (state) => {
+  //       state.user = null;
+  //     });
+  // },
 });
 
 export const { setUser } = authSlice.actions;
