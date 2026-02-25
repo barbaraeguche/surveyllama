@@ -1,5 +1,5 @@
-import type { SubmitResponseRequest } from "@/lib/definitions";
-import { participantApi } from "@/services/api";
+import type { SubmitResponseRequest } from "../../lib/definitions";
+import { participantApi } from "../../services/api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchSurveyForParticipant = createAsyncThunk(

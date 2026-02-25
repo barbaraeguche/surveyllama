@@ -8,13 +8,16 @@ import type {
 } from "@/lib/definitions";
 import axios from "axios";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000/api";
 
 const api = axios.create({
-  baseURL: `${BACKEND_URL}/api`,
+  baseURL: `${BACKEND_URL}`,
   withCredentials: true,
   headers: { "Content-Type": "application/json", }
 });
+
+export const healthCheck = () => api.get("/health");
+export const addNumbers = (a: number, b: number) => api.get(`/add?a=${a}&b=${b}`);
 
 // administrator endpoints
 export const administratorApi = {

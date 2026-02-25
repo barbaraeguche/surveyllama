@@ -1,5 +1,5 @@
-import type { CreateSurveyRequest, SendInvitationsRequest, UpdateSurveyRequest } from "@/lib/definitions";
-import { administratorApi } from "@/services/api";
+import type { CreateSurveyRequest, SendInvitationsRequest, UpdateSurveyRequest } from "../../lib/definitions";
+import { administratorApi } from "../../services/api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const fetchSurveys = createAsyncThunk(

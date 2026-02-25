@@ -1,12 +1,12 @@
-import type { Survey, SurveyAnalytics } from "@/lib/definitions";
-import type { ThunkError, ThunkStatus } from "@/lib/types";
+import type { Survey, SurveyAnalytics } from "../../lib/definitions";
+import type { ThunkError, ThunkStatus } from "../../lib/types";
 import {
   createSurvey,
   fetchAnalytics,
   fetchSurveys,
   publishSurvey,
   updateSurvey
-} from "@/redux/thunks/administratorThunk";
+} from "../../redux/thunks/administratorThunk";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface AdministratorState {

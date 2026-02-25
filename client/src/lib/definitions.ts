@@ -1,5 +1,5 @@
 // user & authentication
-import type { QuestionType } from "@/utils/constants";
+import type { QuestionType } from "../utils/constants";
 
 export interface User {
   uid: string;
