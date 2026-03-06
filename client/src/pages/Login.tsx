@@ -1,0 +1,82 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Input, Card } from '../components/UI';
+import { motion } from 'motion/react';
+import { auth } from '../lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+
+export default function Login() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-20">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <Card className="p-8">
+          <h2 className="text-2xl font-bold text-center mb-6">
+            {isLogin ? 'Admin Login' : 'Create Admin Account'}
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Password</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            
+            <Button type="submit" className="w-full py-6 text-lg">
+              {isLogin ? 'Login' : 'Register'}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-indigo-600 hover:underline text-sm"
+            >
+              {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+            </button>
+          </div>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}

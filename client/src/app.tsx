@@ -1,29 +1,62 @@
-import { useState } from 'react';
-import './App.css';
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import CreateSurvey from './pages/CreateSurvey';
+import SurveyView from './pages/SurveyView';
+import Analytics from './pages/Analytics';
+import Navbar from './components/Navbar';
+import { auth } from './lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
-function App() {
-  const [count, setCount] = useState(0)
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+function AppContent() {
+  const { token, loading } = useAuth();
+
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (loading) return <div className="text-center py-20">Loading...</div>;
+    if (!token) return <Navigate to="/login" replace />;
+    return <>{children}</>;
+  };
 
   return (
-    // <>
-    <div className='app'>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/survey/:id" element={<SurveyView />} />
+          
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/create" element={
+            <ProtectedRoute>
+              <CreateSurvey />
+            </ProtectedRoute>
+          } />
+          <Route path="/analytics/:id" element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </main>
     </div>
-  
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
