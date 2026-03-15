@@ -1,17 +1,18 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import surveyRoutes from './server/routes/surveyRoutes';
 
 dotenv.config();
 
 export const app = express();
 const PORT = 3000;
-
+app.use(cors());
 app.use(express.json());
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok' });
 });
 
