@@ -30,9 +30,9 @@ export default function Navbar() {
                 <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold uppercase">
                   {(user?.displayName || user?.email || '?')[0]}
                 </div>
-                {/* <span className="text-sm font-medium text-neutral-700 max-w-[150px] truncate">
+                <span className="text-sm font-medium text-neutral-700 max-w-37.5 truncate">
                   {user?.displayName || user?.email}
-                </span> */}
+                </span>
               </div>
               <Link to="/dashboard" className="flex items-center gap-1 text-neutral-600 hover:text-indigo-600 transition-colors">
                 <LayoutDashboard size={18} />

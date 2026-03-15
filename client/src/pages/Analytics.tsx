@@ -45,7 +45,7 @@ export default function Analytics() {
               {q.text}
             </h3>
 
-            <div className="h-[300px] w-full">
+            <div className="h-75 w-full">
               {(q.type === 'multiple_choice' || q.type === 'rating') && (
                 <BarChartComponent data={q.data} />
               )}
@@ -53,7 +53,7 @@ export default function Analytics() {
                 <CheckboxChartComponent data={q.data} />
               )}
               {q.type === 'short_answer' && (
-                <div className="space-y-2 max-h-[250px] overflow-y-auto pr-4">
+                <div className="space-y-2 max-h-62.5 overflow-y-auto pr-4">
                   {q.data.map((ans: string, i: number) => (
                     <div key={i} className="p-3 bg-neutral-50 rounded-lg text-sm border border-neutral-100 italic">
                       "{ans}"
