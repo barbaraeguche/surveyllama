@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card } from '../components/UI';
 import { motion } from 'motion/react';
-import { auth } from '../lib/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, googleProvider } from '../lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -23,6 +23,16 @@ export default function Login() {
         await createUserWithEmailAndPassword(auth, email, password);
       }
 
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    try {
+      await signInWithPopup(auth, googleProvider);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message);
@@ -66,7 +76,23 @@ export default function Login() {
               {isLogin ? 'Login' : 'Register'}
             </Button>
           </form>
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-neutral-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-neutral-500">Or continue with</span>
+            </div>
+          </div>
 
+          <Button 
+            onClick={handleGoogleSignIn}
+            
+            className="w-full py-4 flex items-center justify-center gap-2 border-neutral-200 hover:bg-neutral-50"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            Sign in with Google
+          </Button>
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
