@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Button, Input, Card } from '../components/UI';
 import { Survey, Question } from '../types';
 import { motion } from 'motion/react';
@@ -8,6 +8,8 @@ import { surveyService } from '../services/surveyService';
 
 export default function SurveyView() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [email, setEmail] = useState('');
@@ -32,9 +34,10 @@ export default function SurveyView() {
   }, [survey]);
 
   const fetchSurvey = async () => {
+    if (!id) return;
     setLoading(true);
     setError(null);
-    const { data, error } = await surveyService.getById(id!);
+    const { data, error } = await surveyService.getById(id);
     
     if (error) {
       setError(error);
@@ -60,7 +63,7 @@ export default function SurveyView() {
     setIsSubmitting(true);
     setError(null);
 
-    const { error } = await surveyService.submitResponse(id!, { email, answers });
+    const { error } = await surveyService.submitResponse(id!, { email, answers, token });
 
     if (error) {
       setError(error);

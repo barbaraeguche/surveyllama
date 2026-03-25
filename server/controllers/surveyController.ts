@@ -1,8 +1,13 @@
 import { Response } from 'express';
-import { db } from '../config/firebase';
-import admin from '../config/firebase';
-import { AuthRequest } from '../middleware/auth';
+import { db } from '../config/firebase.js';
+import admin from '../config/firebase.js';
+import { AuthRequest } from '../middleware/auth.js';
 
+/**
+ * Fetches all surveys created by the authenticated user.
+ * @param req - AuthRequest containing user info.
+ * @param res - Express Response object.
+ */
 export const getSurveys = async (req: AuthRequest, res: Response) => {
   if (!req.user || !req.user.uid) {
     return res.status(401).json({ error: 'User not authenticated' });
@@ -13,7 +18,6 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    console.log('Fetching surveys for user:', JSON.stringify(req.user, null, 2));
     const snapshot = await db.collection('surveys')
       .where('admin_id', '==', req.user.uid)
       .get();
@@ -29,6 +33,11 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Creates a new survey with associated questions.
+ * @param req - AuthRequest containing survey details in body.
+ * @param res - Express Response object.
+ */
 export const createSurvey = async (req: AuthRequest, res: Response) => {
   const { title, description, expiry_date, questions, settings } = req.body;
   
@@ -68,6 +77,11 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Fetches a single survey by ID, including its questions.
+ * @param req - Express Request object with survey ID in params.
+ * @param res - Express Response object.
+ */
 export const getSurveyById = async (req: AuthRequest, res: Response) => {
   try {
     const surveyDoc = await db.collection('surveys').doc(req.params.id).get();
@@ -82,15 +96,135 @@ export const getSurveyById = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Publishes a survey, making it available for responses.
+ * @param req - AuthRequest with survey ID in params.
+ * @param res - Express Response object.
+ */
 export const publishSurvey = async (req: AuthRequest, res: Response) => {
   try {
-    await db.collection('surveys').doc(req.params.id).update({ is_published: true });
+    const surveyRef = db.collection('surveys').doc(req.params.id);
+    const surveyDoc = await surveyRef.get();
+    
+    if (!surveyDoc.exists) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    if (surveyDoc.data()?.admin_id !== req.user.uid) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    await surveyRef.update({ is_published: true });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to publish survey' });
   }
 };
 
+/**
+ * Unpublishes a survey, preventing new responses.
+ * Cannot unpublish if responses already exist.
+ * @param req - AuthRequest with survey ID in params.
+ * @param res - Express Response object.
+ */
+export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
+  try {
+    const surveyRef = db.collection('surveys').doc(req.params.id);
+    const surveyDoc = await surveyRef.get();
+
+    if (!surveyDoc.exists) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    if (surveyDoc.data()?.admin_id !== req.user.uid) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Check for responses
+    const responsesSnapshot = await surveyRef.collection('responses').limit(1).get();
+    if (!responsesSnapshot.empty) {
+      return res.status(400).json({ error: 'Cannot unpublish a survey that already has responses.' });
+    }
+
+    await surveyRef.update({ is_published: false });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to unpublish survey' });
+  }
+};
+
+/**
+ * Updates an existing survey's metadata and questions.
+ * Only allowed if the survey is not published.
+ * @param req - AuthRequest with survey ID in params and update data in body.
+ * @param res - Express Response object.
+ */
+export const updateSurvey = async (req: AuthRequest, res: Response) => {
+  const { title, description, expiry_date, questions, settings } = req.body;
+  const surveyId = req.params.id;
+
+  try {
+    const surveyRef = db.collection('surveys').doc(surveyId);
+    const surveyDoc = await surveyRef.get();
+
+    if (!surveyDoc.exists) {
+      return res.status(404).json({ error: 'Survey not found' });
+    }
+
+    const surveyData = surveyDoc.data();
+    if (surveyData?.admin_id !== req.user.uid) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    if (surveyData?.is_published) {
+      return res.status(400).json({ error: 'Cannot edit a published survey. Please unpublish it first.' });
+    }
+
+    // Update survey metadata
+    await surveyRef.update({
+      title,
+      description,
+      expiry_date,
+      settings: settings || surveyData?.settings,
+      updated_at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Update questions
+    if (questions && Array.isArray(questions)) {
+      const questionsSnapshot = await surveyRef.collection('questions').get();
+      const batch = db.batch();
+      
+      // Delete existing questions
+      questionsSnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+
+      // Add new questions
+      questions.forEach((q: any, index: number) => {
+        const qRef = surveyRef.collection('questions').doc();
+        batch.set(qRef, {
+          ...q,
+          order_index: index,
+          options: q.options || [],
+          required: !!q.required
+        });
+      });
+
+      await batch.commit();
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating survey:', error);
+    res.status(500).json({ error: 'Failed to update survey' });
+  }
+};
+
+/**
+ * Deletes a survey and all its associated data.
+ * @param req - AuthRequest with survey ID in params.
+ * @param res - Express Response object.
+ */
 export const deleteSurvey = async (req: AuthRequest, res: Response) => {
   try {
     await db.collection('surveys').doc(req.params.id).delete();
