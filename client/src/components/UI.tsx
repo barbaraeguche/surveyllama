@@ -2,17 +2,25 @@ import React from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * Utility function to merge Tailwind CSS classes.
+ */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Reusable Button component with multiple variants and sizes.
+ */
 export function Button({ 
   className, 
   variant = 'primary', 
   size = 'md',
   ...props 
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { 
+  /** Visual style of the button. */
   variant?: 'primary' | 'outline' | 'ghost' | 'danger';
+  /** Size of the button. */
   size?: 'sm' | 'md' | 'lg';
 }) {
   const variants = {
@@ -41,6 +49,9 @@ export function Button({
   );
 }
 
+/**
+ * Reusable Input component with consistent styling.
+ */
 export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
@@ -53,6 +64,9 @@ export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInp
   );
 }
 
+/**
+ * Reusable Card component for containing content.
+ */
 export function Card({ className, children, ...props }: { className?: string; children: React.ReactNode; [key: string]: any }) {
   return (
     <div className={cn("rounded-xl border border-neutral-200 bg-white shadow-sm", className)} {...props}>
