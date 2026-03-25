@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card } from '../components/UI';
-import { Plus, BarChart3, ExternalLink, Trash2, Send, AlertCircle } from 'lucide-react';
+import { Plus, BarChart3, ExternalLink, Trash2, Send, AlertCircle, Edit, PowerOff, Mail } from 'lucide-react';
 import { Survey } from '../types';
 import { surveyService } from '../services/surveyService';
 import { useAuth } from '../contexts/AuthContext';
@@ -50,6 +50,16 @@ export default function Dashboard() {
     }
   };
 
+  const handleUnpublish = async (id: string) => {
+    const { error } = await surveyService.unpublish(id);
+    
+    if (error) {
+      alert(error);
+    } else {
+      fetchSurveys();
+    }
+  };
+
   if (loading) return <div className="text-center py-20">Loading surveys...</div>;
 
   return (
@@ -63,12 +73,14 @@ export default function Dashboard() {
 
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-xl font-semibold text-neutral-800">Your Surveys</h2>
-        <Link to="/create">
-          <Button className="flex gap-2">
-            <Plus size={20} />
-            Create New Survey
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/create">
+            <Button className="flex gap-2">
+              <Plus size={20} />
+              Create New Survey
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -83,7 +95,7 @@ export default function Dashboard() {
         <Card className="p-12 text-center">
           <p className="text-neutral-500 mb-4">You haven't created any surveys yet.</p>
           <Link to="/create">
-            <Button >Create your first survey</Button>
+            <Button variant="outline">Create your first survey</Button>
           </Link>
         </Card>
       ) : (
@@ -99,11 +111,18 @@ export default function Dashboard() {
                 </span>
               </div>
               
-              <p className="text-neutral-600 text-sm mb-6 line-clamp-2 grow">
+              <p className="text-neutral-600 text-sm mb-6 line-clamp-2 flex-grow">
                 {survey.description || 'No description provided.'}
               </p>
 
               <div className="flex flex-wrap gap-2 mt-auto">
+                <Link to={`/invite/${survey.id}`} className="flex-1">
+                  <Button className="w-full flex gap-1 bg-purple-50 text-purple-600 hover:bg-purple-100">
+                    <Mail size={16} />
+                    Invite
+                  </Button>
+                </Link>
+
                 <Link to={`/analytics/${survey.id}`} className="flex-1">
                   <Button className="w-full flex gap-1 bg-neutral-100 text-neutral-900 hover:bg-neutral-200">
                     <BarChart3 size={16} />
@@ -112,20 +131,38 @@ export default function Dashboard() {
                 </Link>
                 
                 {survey.is_published ? (
-                  <Link to={`/survey/${survey.id}`} target="_blank" className="flex-1">
-                    <Button className="w-full flex gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
-                      <ExternalLink size={16} />
-                      View
+                  <>
+                    <Link to={`/survey/${survey.id}`} target="_blank" className="flex-1">
+                      <Button className="w-full flex gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
+                        <ExternalLink size={16} />
+                        View
+                      </Button>
+                    </Link>
+                    <Button 
+                      onClick={() => handleUnpublish(survey.id)}
+                      className="flex-1 flex gap-1 bg-orange-50 text-orange-600 hover:bg-orange-100"
+                      title="Unpublish to edit"
+                    >
+                      <PowerOff size={16} />
+                      Unpublish
                     </Button>
-                  </Link>
+                  </>
                 ) : (
-                  <Button 
-                    onClick={() => handlePublish(survey.id)}
-                    className="flex-1 flex gap-1 bg-green-600 hover:bg-green-700"
-                  >
-                    <Send size={16} />
-                    Publish
-                  </Button>
+                  <>
+                    <Link to={`/edit/${survey.id}`} className="flex-1">
+                      <Button className="w-full flex gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100">
+                        <Edit size={16} />
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button 
+                      onClick={() => handlePublish(survey.id)}
+                      className="flex-1 flex gap-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <Send size={16} />
+                      Publish
+                    </Button>
+                  </>
                 )}
 
                 <Button 
