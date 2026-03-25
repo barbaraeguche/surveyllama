@@ -9,7 +9,8 @@ import { AuthRequest } from '../middleware/auth.js';
  * @param res - Express Response object.
  */
 export const getAnalytics = async (req: AuthRequest, res: Response) => {
-  const surveyId = req.params.id;
+    const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
 
   try {
     const surveyDoc = await db.collection('surveys').doc(surveyId).get();
@@ -17,7 +18,7 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Survey not found' });
     }
 
-    if (surveyDoc.data()?.admin_id !== req.user?.uid) {
+    if (surveyDoc.data()?.admin_id !== userID) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 

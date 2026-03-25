@@ -39,17 +39,18 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
  * @param res - Express Response object.
  */
 export const createSurvey = async (req: AuthRequest, res: Response) => {
+  
   const { title, description, expiry_date, questions, settings } = req.body;
   
   try {
     const surveyRef = db.collection('surveys').doc();
     const surveyId = surveyRef.id;
-
+    const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
     await surveyRef.set({
       title,
       description,
       expiry_date,
-      admin_id: req.user.uid,
+      admin_id: userID,
       is_published: false,
       settings: settings || {
         is_anonymous: false,
@@ -84,10 +85,11 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
  */
 export const getSurveyById = async (req: AuthRequest, res: Response) => {
   try {
-    const surveyDoc = await db.collection('surveys').doc(req.params.id).get();
+    const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const surveyDoc = await db.collection('surveys').doc(surveyId).get();
     if (!surveyDoc.exists) return res.status(404).json({ error: 'Survey not found' });
 
-    const questionsSnapshot = await db.collection('surveys').doc(req.params.id).collection('questions').orderBy('order_index', 'asc').get();
+    const questionsSnapshot = await db.collection('surveys').doc(surveyId).collection('questions').orderBy('order_index', 'asc').get();
     const questions = questionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     res.json({ id: surveyDoc.id, ...surveyDoc.data(), questions });
@@ -103,14 +105,16 @@ export const getSurveyById = async (req: AuthRequest, res: Response) => {
  */
 export const publishSurvey = async (req: AuthRequest, res: Response) => {
   try {
-    const surveyRef = db.collection('surveys').doc(req.params.id);
+    const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const surveyRef = db.collection('surveys').doc(surveyId);
     const surveyDoc = await surveyRef.get();
+    const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
     
     if (!surveyDoc.exists) {
       return res.status(404).json({ error: 'Survey not found' });
     }
 
-    if (surveyDoc.data()?.admin_id !== req.user.uid) {
+    if (surveyDoc.data()?.admin_id !== userID) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -129,14 +133,16 @@ export const publishSurvey = async (req: AuthRequest, res: Response) => {
  */
 export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
   try {
-    const surveyRef = db.collection('surveys').doc(req.params.id);
+    const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const surveyRef = db.collection('surveys').doc(surveyId);
     const surveyDoc = await surveyRef.get();
+    const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
 
     if (!surveyDoc.exists) {
       return res.status(404).json({ error: 'Survey not found' });
     }
 
-    if (surveyDoc.data()?.admin_id !== req.user.uid) {
+    if (surveyDoc.data()?.admin_id !== userID) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -161,7 +167,7 @@ export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
  */
 export const updateSurvey = async (req: AuthRequest, res: Response) => {
   const { title, description, expiry_date, questions, settings } = req.body;
-  const surveyId = req.params.id;
+  const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   try {
     const surveyRef = db.collection('surveys').doc(surveyId);
@@ -172,7 +178,8 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
     }
 
     const surveyData = surveyDoc.data();
-    if (surveyData?.admin_id !== req.user.uid) {
+    const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
+    if (surveyData?.admin_id !== userID) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
@@ -227,7 +234,8 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
  */
 export const deleteSurvey = async (req: AuthRequest, res: Response) => {
   try {
-    await db.collection('surveys').doc(req.params.id).delete();
+    const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    await db.collection('surveys').doc(surveyId).delete();
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete survey' });

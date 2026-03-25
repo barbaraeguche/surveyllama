@@ -9,7 +9,7 @@ import admin from '../config/firebase.js';
  */
 export const submitResponse = async (req: Request, res: Response) => {
   const { email, answers } = req.body;
-  const surveyId = req.params.id;
+  const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
   if (!surveyId || !answers) {
     return res.status(400).json({ error: 'Missing required fields' });

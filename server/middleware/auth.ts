@@ -19,10 +19,11 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
   try {
     const decodedToken = await auth.verifyIdToken(token);
+    const {uid, email, ...rest} = decodedToken;
     req.user = {
-      uid: decodedToken.uid,
-      email: decodedToken.email,
-      ...decodedToken
+      uid,
+      email,
+      ...rest
     };
     next();
   } catch (error) {
