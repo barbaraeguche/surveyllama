@@ -76,6 +76,7 @@ export default function Login() {
               {isLogin ? 'Login' : 'Register'}
             </Button>
           </form>
+
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-neutral-200"></div>
@@ -87,12 +88,13 @@ export default function Login() {
 
           <Button 
             onClick={handleGoogleSignIn}
-            
+            variant="outline" 
             className="w-full py-4 flex items-center justify-center gap-2 border-neutral-200 hover:bg-neutral-50"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
             Sign in with Google
           </Button>
+
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
