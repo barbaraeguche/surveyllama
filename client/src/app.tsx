@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import CreateSurvey from './pages/CreateSurvey';
 import SurveyView from './pages/SurveyView';
 import Analytics from './pages/Analytics';
+import SendInvitations from './pages/SendInvitations';
 import Navbar from './components/Navbar';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -40,9 +41,19 @@ function AppContent() {
               <CreateSurvey />
             </ProtectedRoute>
           } />
+          <Route path="/edit/:id" element={
+            <ProtectedRoute>
+              <CreateSurvey />
+            </ProtectedRoute>
+          } />
           <Route path="/analytics/:id" element={
             <ProtectedRoute>
               <Analytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/invite/:id" element={
+            <ProtectedRoute>
+              <SendInvitations />
             </ProtectedRoute>
           } />
         </Routes>
