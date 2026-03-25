@@ -111,7 +111,7 @@ export default function Dashboard() {
                 </span>
               </div>
               
-              <p className="text-neutral-600 text-sm mb-6 line-clamp-2 flex-grow">
+              <p className="text-neutral-600 text-sm mb-6 line-clamp-2 grow">
                 {survey.description || 'No description provided.'}
               </p>
 

@@ -238,7 +238,7 @@ export default function CreateSurvey() {
                 </div>
                 
                 <div className="flex justify-between items-start mb-4 ml-6">
-                  <div className="flex-grow mr-4">
+                  <div className="grow mr-4">
                     <Input
                       placeholder="Enter your question here..."
                       value={q.text}
