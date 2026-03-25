@@ -3,9 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize Firebase
-// const analytics = getAnalytics(app);
-
 if (!admin.apps.length) {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -30,10 +27,6 @@ if (!admin.apps.length) {
 }
 
 export const db = admin.firestore();
+db.settings({ databaseId: process.env.FIREBASE_FIRESTORE_DATABASE_ID });
 export const auth = admin.auth();
 export default admin;
-
-// Import the functions you need from the SDKs you need
-// import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
