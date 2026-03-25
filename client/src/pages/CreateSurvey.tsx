@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Button, Input, Card } from '../components/UI';
-import { Plus, Trash2, GripVertical, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, GripVertical, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Question, QuestionType } from '../types';
 import { motion, Reorder } from 'motion/react';
 import { surveyService } from '../services/surveyService';
 
 export default function CreateSurvey() {
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -15,8 +18,36 @@ export default function CreateSurvey() {
   const [thankYouMessage, setThankYouMessage] = useState('Thank you for participating in our survey!');
   const [questions, setQuestions] = useState<Partial<Question>[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isEdit) {
+      fetchSurvey();
+    }
+  }, [id]);
+
+  const fetchSurvey = async () => {
+    setLoading(true);
+    const { data, error } = await surveyService.getById(id!);
+    if (error) {
+      setError(error);
+    } else if (data) {
+      setTitle(data.title);
+      setDescription(data.description || '');
+      setExpiryDate(data.expiry_date || '');
+      setIsAnonymous(data.settings?.is_anonymous || false);
+      setDisplayOrder(data.settings?.display_order || 'sequential');
+      setThankYouMessage(data.settings?.thank_you_message || 'Thank you for participating in our survey!');
+      setQuestions(data.questions || []);
+      
+      if (data.is_published) {
+        setError('This survey is currently published and cannot be edited. Please unpublish it first.');
+      }
+    }
+    setLoading(false);
+  };
 
   const addQuestion = (type: QuestionType) => {
     const newQuestion: Partial<Question> = {
@@ -67,7 +98,7 @@ export default function CreateSurvey() {
     setIsSubmitting(true);
     setError(null);
 
-    const { data, error } = await surveyService.create({
+    const surveyData = {
       title,
       description,
       expiry_date: expiryDate,
@@ -77,25 +108,40 @@ export default function CreateSurvey() {
         display_order: displayOrder,
         thank_you_message: thankYouMessage
       }
-    });
+    };
+
+    const { data, error } = isEdit 
+      ? await surveyService.update(id!, surveyData)
+      : await surveyService.create(surveyData);
 
     if (error) {
       setError(error);
       setIsSubmitting(false);
-    } else if (data) {
+    } else {
       navigate('/dashboard');
     }
   };
 
+  if (loading) return <div className="text-center py-20">Loading survey data...</div>;
+
   return (
     <div className="max-w-4xl mx-auto pb-20">
+      <Link to="/dashboard" className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors">
+        <ArrowLeft size={18} />
+        Back to Dashboard
+      </Link>
+
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Create New Survey</h1>
-        <Button onClick={handleSubmit} disabled={isSubmitting} className="px-8 flex gap-2">
+        <h1 className="text-3xl font-bold">{isEdit ? 'Edit Survey' : 'Create New Survey'}</h1>
+        <Button 
+          onClick={handleSubmit} 
+          disabled={isSubmitting || (isEdit && error?.includes('published'))} 
+          className="px-8 flex gap-2"
+        >
           {isSubmitting ? 'Saving...' : (
             <>
               <CheckCircle2 size={20} />
-              Save Survey
+              {isEdit ? 'Update Survey' : 'Save Survey'}
             </>
           )}
         </Button>
@@ -192,7 +238,7 @@ export default function CreateSurvey() {
                 </div>
                 
                 <div className="flex justify-between items-start mb-4 ml-6">
-                  <div className="grow mr-4">
+                  <div className="flex-grow mr-4">
                     <Input
                       placeholder="Enter your question here..."
                       value={q.text}
