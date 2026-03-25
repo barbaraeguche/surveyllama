@@ -1,10 +1,21 @@
 import { logger } from './logger';
 
+/**
+ * Standard structure for API responses.
+ */
 export interface ApiResponse<T> {
+  /** The data returned from the API, if successful. */
   data?: T;
+  /** The error message, if the request failed. */
   error?: string;
 }
 
+/**
+ * Generic function to perform API requests with logging and error handling.
+ * @param url - The API endpoint URL.
+ * @param options - Standard fetch options.
+ * @returns A promise that resolves to an ApiResponse object.
+ */
 export async function apiRequest<T>(
   url: string,
   options: RequestInit = {}
