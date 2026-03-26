@@ -1,0 +1,43 @@
+components:
+	- dashboard
+	- createSurvey
+	- surveyQuestions (add, edit, delete):
+		- multipleChoiceQuestions
+		- shortAnswerQuestions
+		- checkboxQuestions
+		- ratingScaleQuestions
+	- uploadParticipantEmails
+	- surveyAnalytics:
+		- multipleChoiceChart
+    - shortAnswerChart
+    - checkboxChart
+    - ratingScaleChart
+
+workflow:
+ - button -> create survey
+ - surveys -> survey -> add question
+ - surveys -> survey -> publish
+ - page -> analytics
+
+implementation:
+	- surveyQuestions:
+		this should be where the schema validation and react-hook-form are located. you can pass params or either a context.
+		a main button to add questions that opens up a dropdown to render the specific question type.
+
+		- multipleChoiceQuestions:
+      - button to add/edit/delete each choice
+      - max 4 options
+
+		- shortAnswerQuestions:
+			- text area for the answer
+
+		- checkboxQuestions:
+			- button to add/edit/delete each choice
+      - max 4 options
+
+		- ratingScaleQuestions:
+		 - single slider that additionally displays the current range
+
+important to remember:
+ - cannot publish survey without questions
+ - cannot edit questions after publishing
