@@ -76,7 +76,7 @@ export default function Analytics() {
             <h2 className="text-xl font-bold">Response Trends</h2>
             <p className="text-sm text-neutral-500 text-italic">Daily response volume over time</p>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.trends}>
                 <defs>
@@ -128,7 +128,7 @@ export default function Analytics() {
               </h3>
             </div>
 
-            <div className="flex-1 min-h-[250px] w-full">
+            <div className="flex-1 min-h-62.5 w-full">
               {(q.type === 'multiple_choice' || q.type === 'rating') && (
                 <BarChartComponent data={q.data} options={q.options} />
               )}
@@ -136,7 +136,7 @@ export default function Analytics() {
                 <CheckboxChartComponent data={q.data} />
               )}
               {q.type === 'short_answer' && (
-                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-3 max-h-75 overflow-y-auto pr-2 custom-scrollbar">
                   {q.data.map((ans: string, i: number) => (
                     <div key={i} className="p-4 bg-neutral-50 rounded-xl text-sm border border-neutral-100 leading-relaxed">
                       "{ans}"
