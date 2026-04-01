@@ -10,7 +10,7 @@
     "dev": "tsx server.ts",
     "test": "NODE_ENV=test vitest run",
     "build": "vite build",
-    "start":"node server.ts",
+    "start": "node --experimental-strip-types server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
