@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: surveys
+    // Fields: title, description, expiry_date, admin_id, is_published, settings, created_at
+    //
+    // Collection: surveys/{surveyId}/questions
+    // Fields: text, type, options, required, order_index
+    //
+    // Collection: surveys/{surveyId}/responses
+    // Fields: participant_email, submitted_at, answers, invitation_token
+    //
+    // Collection: surveys/{surveyId}/invitations
+    // Fields: email, status, sent_at, admin_id, error
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(adminId) {
+      return isAuthenticated() && request.auth.uid == adminId;
+    }
+
+    function isSurveyAdmin(surveyId) {
+      return isOwner(get(/databases/$(database)/documents/surveys/$(surveyId)).data.admin_id);
+    }
+
+    function isPublished(surveyId) {
+      return get(/databases/$(database)/documents/surveys/$(surveyId)).data.is_published == true;
+    }
+
+    // Surveys
+    match /surveys/{surveyId} {
+      allow read: if isPublished(surveyId) || isOwner(resource.data.admin_id);
+      allow create: if isAuthenticated() && request.resource.data.admin_id == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.admin_id);
+
+      // Questions
+      match /questions/{questionId} {
+        allow read: if isPublished(surveyId) || isSurveyAdmin(surveyId);
+        allow write: if isSurveyAdmin(surveyId);
+      }
+
+      // Responses
+      match /responses/{responseId} {
+        allow create: if isPublished(surveyId);
+        allow read: if isSurveyAdmin(surveyId);
+      }
+
+      // Invitations
+      match /invitations/{invitationId} {
+        allow read, write: if isSurveyAdmin(surveyId);
+      }
+    }
+  }
+}
