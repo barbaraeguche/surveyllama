@@ -8,8 +8,7 @@ import SurveyView from './pages/SurveyView';
 import Analytics from './pages/Analytics';
 import SendInvitations from './pages/SendInvitations';
 import Navbar from './components/Navbar';
-import { auth } from './lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 

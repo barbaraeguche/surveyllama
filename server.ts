@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -12,11 +12,13 @@ dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
-  
+  const DEV_PORT = 3000;
+  const PROD_PORT = 8080;
+  const PORT = process.env.NODE_ENV !== 'production' ? DEV_PORT : PROD_PORT;
+
   app.use(cors());
   app.use(express.json());
-  
+
   // API Routes
   // console.log('Registering API routes...');
   app.use('/api/surveys', surveyRoutes);
