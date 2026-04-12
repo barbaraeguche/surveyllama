@@ -7,11 +7,11 @@ import {
   unpublishSurvey,
   updateSurvey,
   deleteSurvey 
-} from '../controllers/surveyController.js';
-import { submitResponse } from '../controllers/responseController.js';
-import { getAnalytics } from '../controllers/analyticsController.js';
-import { sendInvitations } from '../controllers/inviteController.js';
-import { authenticateToken } from '../middleware/auth.js';
+} from '../controllers/surveyController';
+import { submitResponse } from '../controllers/responseController';
+import { getAnalytics } from '../controllers/analyticsController';
+import { sendInvitations } from '../controllers/inviteController';
+import { authenticateToken } from '../middleware/auth';
 
 /**
  * Survey routes for managing surveys, responses, analytics, and invitations.
