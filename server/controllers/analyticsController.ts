@@ -1,6 +1,6 @@
-import { Response } from 'express';
-import { db } from '../config/firebase.js';
-import { AuthRequest } from '../middleware/auth.js';
+import type { Response } from 'express';
+import { db } from '../config/firebase.ts';
+import type { AuthRequest } from '../middleware/auth.ts';
 
 /**
  * Fetches and processes analytics data for a survey.

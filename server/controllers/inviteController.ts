@@ -1,8 +1,8 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import { db } from '../config/firebase.js';
-import admin from '../config/firebase.js';
-import { EmailService } from '../services/emailService';
+import type { Response } from 'express';
+import type { AuthRequest } from '../middleware/auth.ts';
+import { db } from '../config/firebase.ts';
+import admin from '../config/firebase.ts';
+import { EmailService } from '../services/emailService.ts';
 
 /**
  * Controller for sending survey invitations to a list of emails.

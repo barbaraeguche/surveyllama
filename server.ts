@@ -3,7 +3,7 @@ import type { RequestHandler } from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import surveyRoutes from './server/routes/surveyRoutes';
+import surveyRoutes from './server/routes/surveyRoutes.ts';
 import path from 'path';
 
 dotenv.config();

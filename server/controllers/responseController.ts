@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
-import { db } from '../config/firebase.js';
-import admin from '../config/firebase.js';
+import type { Request, Response } from 'express';
+import { db } from '../config/firebase.ts';
+import admin from '../config/firebase.ts';
 
 /**
  * Submits a response to a published survey.

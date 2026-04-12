@@ -1,7 +1,7 @@
-import { Response } from 'express';
-import { db } from '../config/firebase.js';
-import admin from '../config/firebase.js';
-import { AuthRequest } from '../middleware/auth.js';
+import type { Response } from 'express';
+import { db } from '../config/firebase.ts';
+import admin from '../config/firebase.ts';
+import type { AuthRequest } from '../middleware/auth.ts';
 
 /**
  * Fetches all surveys created by the authenticated user.
