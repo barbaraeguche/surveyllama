@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Card } from '../components/UI';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend 
+  PieChart, Pie, LineChart, Line, AreaChart, Area, Legend 
 } from 'recharts';
 import { surveyService } from '../services/surveyService';
 import { Users, Calendar, CheckSquare, MessageSquare } from 'lucide-react';
@@ -76,8 +76,8 @@ export default function Analytics() {
             <h2 className="text-xl font-bold">Response Trends</h2>
             <p className="text-sm text-neutral-500 text-italic">Daily response volume over time</p>
           </div>
-          <div className="h-75 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-75 w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" debounce={100}>
               <AreaChart data={data.trends}>
                 <defs>
                   <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
@@ -117,7 +117,7 @@ export default function Analytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {data.questions.map((q: any, idx: number) => (
-          <Card key={q.id} className="p-8 flex flex-col">
+          <Card key={q.id} className="p-8 flex flex-col min-w-0">
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">Question {idx + 1}</span>
@@ -128,15 +128,27 @@ export default function Analytics() {
               </h3>
             </div>
 
-            <div className="flex-1 min-h-62.5 w-full">
-              {(q.type === 'multiple_choice' || q.type === 'rating') && (
-                <BarChartComponent data={q.data} options={q.options} />
+            <div className="h-75 w-full min-w-0">
+              {q.data.length > 0 ? (
+                <>
+                  {(q.type === 'multiple_choice' || q.type === 'rating') && (
+                    <BarChartComponent data={q.data} options={q.options} />
+                  )}
+                  {q.type === 'checkbox' && (
+                    <CheckboxChartComponent data={q.data} />
+                  )}
+                </>
+              ) : (
+                q.type !== 'short_answer' && (
+                  <div className="h-full flex flex-col items-center justify-center text-neutral-400 bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
+                    <MessageSquare size={32} className="mb-2 opacity-20" />
+                    <p className="italic text-sm">No responses yet.</p>
+                  </div>
+                )
               )}
-              {q.type === 'checkbox' && (
-                <CheckboxChartComponent data={q.data} />
-              )}
+              
               {q.type === 'short_answer' && (
-                <div className="space-y-3 max-h-75 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-3 h-full overflow-y-auto pr-2 custom-scrollbar">
                   {q.data.map((ans: string, i: number) => (
                     <div key={i} className="p-4 bg-neutral-50 rounded-xl text-sm border border-neutral-100 leading-relaxed">
                       "{ans}"
@@ -177,19 +189,28 @@ function BarChartComponent({ data, options }: { data: any[]; options?: string[] 
   const counts: Record<string, number> = {};
   
   // Initialize counts for all options if provided
-  if (options) {
-    options.forEach(opt => counts[opt] = 0);
+  if (options && options.length > 0) {
+    options.forEach(opt => counts[String(opt)] = 0);
   }
 
   data.forEach(val => {
-    counts[val] = (counts[val] || 0) + 1;
+    const key = String(val);
+    counts[key] = (counts[key] || 0) + 1;
   });
 
-  const chartData = Object.entries(counts).map(([name, value]) => ({ name, value }));
+  const chartData = Object.entries(counts)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => {
+      // Try to sort numerically if possible (for ratings)
+      const numA = parseFloat(a.name);
+      const numB = parseFloat(b.name);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return 0;
+    });
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={chartData} layout="vertical" margin={{ left: 40 }}>
+    <ResponsiveContainer width="100%" height="100%" debounce={100}>
+      <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
         <XAxis type="number" hide />
         <YAxis 
@@ -197,14 +218,14 @@ function BarChartComponent({ data, options }: { data: any[]; options?: string[] 
           type="category" 
           axisLine={false} 
           tickLine={false} 
-          width={100}
+          width={120}
           tick={{ fontSize: 11, fill: '#64748b' }}
         />
         <Tooltip 
           cursor={{ fill: '#f8fafc' }}
           contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
         />
-        <Bar dataKey="value" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
+        <Bar dataKey="value" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={24} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -213,13 +234,28 @@ function BarChartComponent({ data, options }: { data: any[]; options?: string[] 
 function CheckboxChartComponent({ data }: { data: any[][] }) {
   const counts: Record<string, number> = {};
   data.flat().forEach(val => {
-    counts[val] = (counts[val] || 0) + 1;
+    if (val !== undefined && val !== null) {
+      const key = String(val);
+      counts[key] = (counts[key] || 0) + 1;
+    }
   });
 
-  const chartData = Object.entries(counts).map(([name, value]) => ({ name, value }));
+  const chartData = Object.entries(counts).map(([name, value], index) => ({ 
+    name, 
+    value,
+    fill: COLORS[index % COLORS.length]
+  }));
+
+  if (chartData.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-neutral-400">
+        <p className="italic text-sm">No data to display.</p>
+      </div>
+    );
+  }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer width="100%" height="100%" debounce={100}>
       <PieChart>
         <Pie
           data={chartData}
@@ -230,11 +266,7 @@ function CheckboxChartComponent({ data }: { data: any[][] }) {
           paddingAngle={8}
           dataKey="value"
           stroke="none"
-        >
-          {chartData.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
+        />
         <Tooltip 
           contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
         />

@@ -28,10 +28,14 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
     const questionsSnapshot = await db.collection('surveys').doc(surveyId).collection('questions').orderBy('order_index', 'asc').get();
     const questions = questionsSnapshot.docs.map(doc => {
       const qData = doc.data();
-      const qId = doc.id;
+      // Use the id field from data if it exists (legacy), otherwise use the document ID
+      const qId = qData.id || doc.id;
       
-      // Process responses for this question
-      const answers = responses.map((r: any) => r.answers[qId]).filter(a => a !== undefined);
+       // Process responses for this question
+      const answers = responses.map((r: any) => {
+        const answer = r.answers ? r.answers[qId] : undefined;
+        return answer;
+      }).filter(a => a !== undefined);
 
       return { 
         id: qId, 
