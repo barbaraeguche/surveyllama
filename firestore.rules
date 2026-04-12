@@ -36,13 +36,14 @@ service cloud.firestore {
 
     // Surveys
     match /surveys/{surveyId} {
-      allow read: if isPublished(surveyId) || isOwner(resource.data.admin_id);
+      allow read, list: if isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.admin_id == request.auth.uid;
       allow update, delete: if isOwner(resource.data.admin_id);
 
       // Questions
       match /questions/{questionId} {
-        allow read: if isPublished(surveyId) || isSurveyAdmin(surveyId);
+       // allow read: if isPublished(surveyId) || isSurveyAdmin(surveyId);
+        allow read: if isAuthenticated();
         allow write: if isSurveyAdmin(surveyId);
       }
 

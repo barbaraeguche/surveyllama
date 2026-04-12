@@ -1,26 +1,33 @@
 import express from 'express';
+import type { RequestHandler } from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import surveyRoutes from './server/routes/surveyRoutes';
+import surveyRoutes from './server/routes/surveyRoutes.ts';
 import path from 'path';
 
 dotenv.config();
 
+export const app = express();
 
+app.use(cors());
+app.use(express.json());
 
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// Cast the router to RequestHandler to avoid overload ambiguity with mixed Express typings.
+app.use('/api/surveys', surveyRoutes as unknown as RequestHandler);
 
 async function startServer() {
-  const app = express();
-  const PORT = 3000;
-  
-  app.use(cors());
-  app.use(express.json());
-  
-  // API Routes
-  // console.log('Registering API routes...');
-  app.use('/api/surveys', surveyRoutes);
-  // console.log('API routes registered');
+  // Firebase App Hosting PORT is default to 8080, so add fallback to 3000 for local dev.
+  const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000;
+
+  if (isNaN(port)) {
+    console.error(`Invalid PORT value: ${process.env.PORT}`);
+    process.exit(1);
+  }
 
   console.log('Starting server...');
   // Use Vite middleware in development for hot module replacement and fast refresh
@@ -40,8 +47,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${port}`);
   });
 }
 

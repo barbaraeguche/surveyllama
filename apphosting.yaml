@@ -1,0 +1,23 @@
+# apphosting.yaml
+# Configuration for Firebase App Hosting.
+# For more information, see: https://firebase.google.com/docs/app-hosting/configure
+
+kind: "AppHostingConfig"
+schemaVersion: "v1"
+
+# The runtime configuration for the application.
+runConfig:
+  # The CPU and memory limits for the application.
+  cpu: 1
+  memoryMiB: 512
+  # The maximum number of concurrent requests per instance.
+  concurrency: 80
+  # The minimum and maximum number of instances.
+  minInstances: 0
+  maxInstances: 10
+
+# Environment variables for the application.
+# You can also set these in the Firebase Console.
+env:
+  - variable: NODE_ENV
+    value: production

@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { auth } from '../config/firebase';
+import type { Request, Response, NextFunction } from 'express';
+import { auth } from '../config/firebase.ts';
 
 export interface AuthRequest extends Request {
   user?: {

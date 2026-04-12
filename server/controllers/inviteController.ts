@@ -1,8 +1,8 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
-import { db } from '../config/firebase.js';
-import admin from '../config/firebase.js';
-import { EmailService } from '../services/emailService';
+import type { Response } from 'express';
+import type { AuthRequest } from '../middleware/auth.ts';
+import { db } from '../config/firebase.ts';
+import admin from '../config/firebase.ts';
+import { EmailService } from '../services/emailService.ts';
 
 /**
  * Controller for sending survey invitations to a list of emails.
@@ -24,6 +24,18 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Survey not found' });
     }
     surveyData = surveyDoc.data();
+    
+    // Check ownership
+    if (surveyData.admin_id !== req.user?.uid) {
+      return res.status(403).json({ error: 'Unauthorized: You do not own this survey' });
+    }
+
+    // Check if survey is published
+    if (!surveyData.is_published) {
+      return res.status(400).json({ 
+        error: 'Cannot send invitations for an unpublished survey. Please publish it first.' 
+      });
+    }
   } catch (err) {
     console.error('Error fetching survey details:', err);
     return res.status(500).json({ error: 'Failed to fetch survey details' });
