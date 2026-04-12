@@ -62,11 +62,15 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
 
     const questionsBatch = db.batch();
     questions.forEach((q: any, index: number) => {
-      const qRef = db.collection('surveys').doc(surveyId).collection('questions').doc();
+      // Use the provided question ID if it exists, otherwise generate a new one
+      const qId = q.id || db.collection('surveys').doc(surveyId).collection('questions').doc().id;
+      const qRef = db.collection('surveys').doc(surveyId).collection('questions').doc(qId);
+      // Remove id from the data to avoid redundancy and potential overwrite issues
+      const { id, ...qData } = q;
       questionsBatch.set(qRef, {
-        ...q,
+        ...qData,
         order_index: index,
-        options: q.options || [],
+        options: qData.options || [],
         required: !!q.required
       });
     });
@@ -208,9 +212,15 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
 
       // Add new questions
       questions.forEach((q: any, index: number) => {
-        const qRef = surveyRef.collection('questions').doc();
+        // Use the provided question ID if it exists, otherwise generate one
+        const qId = q.id || surveyRef.collection('questions').doc().id;
+        const qRef = surveyRef.collection('questions').doc(qId);
+        
+        // Remove id from the data to avoid redundancy and potential overwrites
+        const { id: _, ...qData } = q;
+       
         batch.set(qRef, {
-          ...q,
+          ...qData,
           order_index: index,
           options: q.options || [],
           required: !!q.required
