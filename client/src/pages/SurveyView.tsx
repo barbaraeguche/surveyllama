@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Button, Input, Card } from "../components/UI";
 import { Survey, Question } from "../types";
@@ -6,31 +6,68 @@ import { motion } from "motion/react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { surveyService } from "../services/surveyService";
 
+type AnswerValue = string | number | string[];
+
+function isQuestionAnswered(
+  question: Question,
+  value: AnswerValue | undefined,
+) {
+  if (question.type === "multiple_choice" || question.type === "checkbox") {
+    return Array.isArray(value) && value.length > 0;
+  }
+
+  if (question.type === "short_answer") {
+    return typeof value === "string" && value.trim().length > 0;
+  }
+
+  return value !== undefined && value !== null;
+}
+
+function toggleOptionSelection(
+  selectedOptions: string[],
+  option: string,
+  checked: boolean,
+) {
+  if (checked) {
+    return selectedOptions.includes(option)
+      ? selectedOptions
+      : [...selectedOptions, option];
+  }
+
+  return selectedOptions.filter((selectedOption) => selectedOption !== option);
+}
+
+function getSelectedOptions(value: AnswerValue | undefined) {
+  return Array.isArray(value) ? value : [];
+}
+
 export default function SurveyView() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [survey, setSurvey] = useState<Survey | null>(null);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [displayQuestions, setDisplayQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     fetchSurvey();
   }, [id]);
 
-  useEffect(() => {
-    if (survey && survey.questions) {
-      let qs = [...survey.questions];
-      if (survey.settings?.display_order === "random") {
-        qs = qs.sort(() => Math.random() - 0.5);
-      }
-      setDisplayQuestions(qs);
+  const displayQuestions = useMemo(() => {
+    if (!survey?.questions) {
+      return [];
     }
+
+    const questions = [...survey.questions];
+    if (survey.settings?.display_order === "random") {
+      questions.sort(() => Math.random() - 0.5);
+    }
+
+    return questions;
   }, [survey]);
 
   const fetchSurvey = async () => {
@@ -47,21 +84,21 @@ export default function SurveyView() {
     setLoading(false);
   };
 
-  const handleAnswerChange = (qId: string, value: any) => {
+  const handleAnswerChange = (qId: string, value: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [qId]: value }));
   };
-
- 
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    // Basic validation
     const missingRequired = survey?.questions?.filter(
-      (q) => q.required && !answers[q.id],
+      (question) =>
+        question.required &&
+        !isQuestionAnswered(question, answers[question.id]),
     );
     if (missingRequired && missingRequired.length > 0) {
-      return alert("Please answer all required questions.");
+      setError("Please answer all required questions.");
+      return;
     }
 
     setIsSubmitting(true);
@@ -82,7 +119,11 @@ export default function SurveyView() {
   };
 
   if (loading)
-    return <div className="text-center py-20 animate-pulse text-neutral-400">Loading survey...</div>;
+    return (
+      <div className="text-center py-20 animate-pulse text-neutral-400">
+        Loading survey...
+      </div>
+    );
 
   if (error) {
     return (
@@ -171,15 +212,25 @@ export default function SurveyView() {
                       className="flex items-center gap-3 p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
                     >
                       <input
-                        type="radio"
-                        name={q.id}
+                        type="checkbox"
                         value={opt}
-                        checked={answers[q.id] === opt}
-                        onChange={(e) =>
-                          handleAnswerChange(q.id, e.target.value)
-                        }
-                        className="w-4 h-4 text-indigo-600"
-                        required={q.required}
+                        checked={getSelectedOptions(answers[q.id]).includes(
+                          opt,
+                        )}
+                        onChange={(e) => {
+                          const currentSelection = getSelectedOptions(
+                            answers[q.id],
+                          );
+                          handleAnswerChange(
+                            q.id,
+                            toggleOptionSelection(
+                              currentSelection,
+                              opt,
+                              e.target.checked,
+                            ),
+                          );
+                        }}
+                        className="w-4 h-4 rounded text-indigo-600"
                       />
                       <span>{opt}</span>
                     </label>
@@ -197,17 +248,21 @@ export default function SurveyView() {
                       <input
                         type="checkbox"
                         value={opt}
-                        checked={(answers[q.id] || []).includes(opt)}
+                        checked={getSelectedOptions(answers[q.id]).includes(
+                          opt,
+                        )}
                         onChange={(e) => {
-                          const current = answers[q.id] || [];
-                          if (e.target.checked) {
-                            handleAnswerChange(q.id, [...current, opt]);
-                          } else {
-                            handleAnswerChange(
-                              q.id,
-                              current.filter((v: string) => v !== opt),
-                            );
-                          }
+                          const currentSelection = getSelectedOptions(
+                            answers[q.id],
+                          );
+                          handleAnswerChange(
+                            q.id,
+                            toggleOptionSelection(
+                              currentSelection,
+                              opt,
+                              e.target.checked,
+                            ),
+                          );
                         }}
                         className="w-4 h-4 rounded text-indigo-600"
                       />

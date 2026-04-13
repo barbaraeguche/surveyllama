@@ -3,6 +3,9 @@
  */
 export type QuestionType = 'multiple_choice' | 'short_answer' | 'checkbox' | 'rating';
 
+/** Supported display orders for survey questions. */
+export type QuestionDisplayOrder = 'sequential' | 'random';
+
 /**
  * Represents a single question in a survey.
  */
@@ -38,14 +41,31 @@ export interface Survey {
   /** Optional list of questions associated with the survey. */
   questions?: Question[];
   /** Optional settings for the survey's behavior. */
-  settings?: {
-    /** Whether responses are anonymous. */
-    is_anonymous: boolean;
-    /** The order in which questions are displayed. */
-    display_order: 'sequential' | 'random';
-    /** The message shown after a user submits their response. */
-    thank_you_message: string;
-  };
+  settings?: SurveySettings;
+}
+
+/** Configurable behavior for a survey. */
+export interface SurveySettings {
+  /** Whether responses are anonymous. */
+  is_anonymous: boolean;
+  /** The order in which questions are displayed. */
+  display_order: QuestionDisplayOrder;
+  /** The message shown after a user submits their response. */
+  thank_you_message: string;
+}
+
+/** Payload used to create or update a survey. */
+export interface SurveyUpsertPayload {
+  /** The title of the survey. */
+  title: string;
+  /** Optional description shown to participants. */
+  description: string;
+  /** Optional survey expiration date. */
+  expiry_date: string;
+  /** Questions included in the survey. */
+  questions: Question[];
+  /** Settings that control survey behavior. */
+  settings: SurveySettings;
 }
 
 /** A single response count entry for analytics trend charts. */

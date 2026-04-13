@@ -59,6 +59,23 @@ function QuestionVisualization({ question }: { question: AnalyticsQuestion }) {
     return <ShortAnswerList answers={answers} />;
   }
 
+  if (question.type === "multiple_choice") {
+    const multiSelectResponses = question.data.filter(
+      (value): value is string[] => Array.isArray(value),
+    );
+
+    if (multiSelectResponses.length > 0) {
+      return <CheckboxChartComponent data={multiSelectResponses} />;
+    }
+
+    const chartData = question.data.filter(
+      (value): value is string | number =>
+        typeof value === "string" || typeof value === "number",
+    );
+
+    return <BarChartComponent data={chartData} options={question.options} />;
+  }
+
   if (!hasResponses) {
     return <EmptyState />;
   }
@@ -71,7 +88,7 @@ function QuestionVisualization({ question }: { question: AnalyticsQuestion }) {
     return <CheckboxChartComponent data={checkboxResponses} />;
   }
 
-  if (question.type === "multiple_choice" || question.type === "rating") {
+  if (question.type === "rating") {
     const chartData = question.data.filter(
       (value): value is string | number =>
         typeof value === "string" || typeof value === "number",
