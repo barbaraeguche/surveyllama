@@ -5,7 +5,7 @@ export interface AuthRequest extends Request {
   user?: {
     uid: string;
     email?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -19,7 +19,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
   try {
     const decodedToken = await auth.verifyIdToken(token);
-    const {uid, email, ...rest} = decodedToken;
+    const { uid, email, ...rest } = decodedToken;
     req.user = {
       uid,
       email,
