@@ -12,8 +12,12 @@ function isQuestionAnswered(
   question: Question,
   value: AnswerValue | undefined,
 ) {
-  if (question.type === "multiple_choice" || question.type === "checkbox") {
+  if (question.type === "multiple_choice") {
     return Array.isArray(value) && value.length > 0;
+  }
+
+  if (question.type === "checkbox") {
+    return typeof value === "string" && value.trim().length > 0;
   }
 
   if (question.type === "short_answer") {
@@ -246,25 +250,12 @@ export default function SurveyView() {
                       className="flex items-center gap-3 p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
                     >
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name={`single-select-${q.id}`}
                         value={opt}
-                        checked={getSelectedOptions(answers[q.id]).includes(
-                          opt,
-                        )}
-                        onChange={(e) => {
-                          const currentSelection = getSelectedOptions(
-                            answers[q.id],
-                          );
-                          handleAnswerChange(
-                            q.id,
-                            toggleOptionSelection(
-                              currentSelection,
-                              opt,
-                              e.target.checked,
-                            ),
-                          );
-                        }}
-                        className="w-4 h-4 rounded text-indigo-600"
+                        checked={answers[q.id] === opt}
+                        onChange={() => handleAnswerChange(q.id, opt)}
+                        className="w-4 h-4 text-indigo-600"
                       />
                       <span>{opt}</span>
                     </label>
