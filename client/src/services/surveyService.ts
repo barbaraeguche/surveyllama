@@ -1,6 +1,8 @@
 import { apiRequest } from '../lib/api';
 import { Survey, SurveyAnalytics, SurveyUpsertPayload } from '../types';
 
+type SurveyAnswerValue = string | number | boolean | string[] | null;
+
 /**
  * Service for interacting with the survey API.
  */
@@ -72,7 +74,7 @@ export const surveyService = {
    * @param surveyId - The survey ID.
    * @param responseData - The response data.
    */
-  async submitResponse(surveyId: string, responseData: { email: string; answers: Record<string, any>; token?: string | null }) {
+  async submitResponse(surveyId: string, responseData: { email: string; answers: Record<string, SurveyAnswerValue>; token?: string | null }) {
     return apiRequest(`/api/surveys/${surveyId}/responses`, {
       method: 'POST',
       body: JSON.stringify(responseData),
