@@ -81,21 +81,29 @@ function QuestionVisualization({ question }: { question: AnalyticsQuestion }) {
   }
 
   if (question.type === "checkbox") {
-    const chartData = question.data.filter(
-      (value): value is string | number =>
-        typeof value === "string" || typeof value === "number",
-    );
+    // Flatten single-item arrays to strings for legacy compatibility
+    const chartData = question.data
+      .map((value) => {
+        if (typeof value === "string" || typeof value === "number")
+          return value;
+        if (Array.isArray(value) && value.length === 1) return value[0];
+        // Ignore multi-select arrays (should not occur for checkbox)
+        return undefined;
+      })
+      .filter((v): v is string | number => v !== undefined);
 
     if (chartData.length > 0) {
       return <BarChartComponent data={chartData} options={question.options} />;
     }
 
-    // Fallback for legacy data stored as arrays before type behavior swap.
+    // Fallback for legacy data stored as true multi-select arrays
     const legacyCheckboxResponses = question.data.filter(
-      (value): value is string[] => Array.isArray(value),
+      (value): value is string[] => Array.isArray(value) && value.length > 1,
     );
-
-    return <CheckboxChartComponent data={legacyCheckboxResponses} />;
+    if (legacyCheckboxResponses.length > 0) {
+      return <CheckboxChartComponent data={legacyCheckboxResponses} />;
+    }
+    return <EmptyState />;
   }
 
   if (question.type === "rating") {

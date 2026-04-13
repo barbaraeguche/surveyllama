@@ -127,10 +127,73 @@ export default function Analytics() {
     return filterTrends(analytics.trends, dateRange, customStart, customEnd);
   }, [analytics?.trends, customEnd, customStart, dateRange]);
 
-  const recentActivityCount =
-    analytics?.trends.length && analytics.trends.length > 0
-      ? analytics.trends[analytics.trends.length - 1].count
-      : 0;
+  // --- StatCard metrics ---
+  // Completion Rate: % of responses that answered all required questions
+  let completionRate = "N/A";
+  let avgAnswers = "N/A";
+  let mostActiveDay = "N/A";
+
+  if (analytics) {
+    const requiredQuestions = analytics.questions.filter((q) => q.required);
+    const totalResponses = analytics.totalResponses;
+    // For each response, count how many required questions are answered
+    // Assume: analytics.questions[0].data.length === totalResponses
+    // Build a map: responseIndex -> count of required questions answered
+    const responseCount = totalResponses;
+    if (responseCount > 0 && requiredQuestions.length > 0) {
+      // For each response index, check if all required questions have a value
+      let completeCount = 0;
+      for (let i = 0; i < responseCount; i++) {
+        let allAnswered = true;
+        for (const q of requiredQuestions) {
+          const ans = q.data[i];
+          if (
+            ans === undefined ||
+            ans === null ||
+            (typeof ans === "string" && ans.trim() === "") ||
+            (Array.isArray(ans) && ans.length === 0)
+          ) {
+            allAnswered = false;
+            break;
+          }
+        }
+        if (allAnswered) completeCount++;
+      }
+      completionRate = `${Math.round((completeCount / responseCount) * 100)}%`;
+    } else if (responseCount > 0) {
+      completionRate = "100%";
+    }
+
+    // Average answers per respondent
+    if (responseCount > 0) {
+      let totalAnswers = 0;
+      for (let i = 0; i < responseCount; i++) {
+        let answersForThisResponse = 0;
+        for (const q of analytics.questions) {
+          const val = q.data[i];
+          if (
+            val !== undefined &&
+            val !== null &&
+            ((typeof val === "string" && val.trim() !== "") ||
+              typeof val === "number" ||
+              (Array.isArray(val) && val.length > 0))
+          ) {
+            answersForThisResponse++;
+          }
+        }
+        totalAnswers += answersForThisResponse;
+      }
+      avgAnswers = (totalAnswers / responseCount).toFixed(1);
+    }
+
+    // Most active day
+    if (analytics.trends && analytics.trends.length > 0) {
+      const max = analytics.trends.reduce((a, b) =>
+        a.count > b.count ? a : b,
+      );
+      mostActiveDay = `${max.date} (${max.count})`;
+    }
+  }
 
   if (loading)
     return (
@@ -174,21 +237,21 @@ export default function Analytics() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <StatCard
           label="Completion Rate"
-          value="92%"
+          value={completionRate}
           icon={<CheckSquare className="text-emerald-500" />}
-          sub="Estimated based on views"
+          sub="% of responses answering all required questions"
         />
         <StatCard
-          label="Avg. Completion Time"
-          value="4m 12s"
-          icon={<Calendar className="text-amber-500" />}
-          sub="Stable over last 7 days"
+          label="Avg. Answers/Respondent"
+          value={avgAnswers}
+          icon={<Users className="text-amber-500" />}
+          sub="Average number of questions answered"
         />
         <StatCard
-          label="Recent Activity"
-          value={recentActivityCount > 0 ? `+${recentActivityCount}` : "0"}
-          icon={<MessageSquare className="text-indigo-500" />}
-          sub="Responses today"
+          label="Most Active Day"
+          value={mostActiveDay}
+          icon={<Calendar className="text-indigo-500" />}
+          sub="Day with most responses (count)"
         />
       </div>
 
