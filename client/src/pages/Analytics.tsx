@@ -1,282 +1,203 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card } from '../components/UI';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, LineChart, Line, AreaChart, Area, Legend 
-} from 'recharts';
-import { surveyService } from '../services/surveyService';
-import { Users, Calendar, CheckSquare, MessageSquare } from 'lucide-react';
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { CheckSquare, Calendar, MessageSquare, Users } from "lucide-react";
 
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+import StatCard from "../components/StatCard";
+import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard";
+import ResponseTrendsCard from "../components/analytics/ResponseTrendsCard";
+import { surveyService } from "../services/surveyService";
+import { AnalyticsDateRange, AnalyticsTrend, SurveyAnalytics } from "../types";
+
+function getStartDate(
+  dateRange: AnalyticsDateRange,
+  customStart: string,
+  now: Date,
+) {
+  if (dateRange === "7d") {
+    const startDate = new Date(now);
+    startDate.setDate(now.getDate() - 7);
+    return startDate;
+  }
+
+  if (dateRange === "30d") {
+    const startDate = new Date(now);
+    startDate.setDate(now.getDate() - 30);
+    return startDate;
+  }
+
+  if (dateRange === "custom" && customStart) {
+    return new Date(customStart);
+  }
+
+  return null;
+}
+
+function getEndDate(customEnd: string) {
+  if (!customEnd) {
+    return null;
+  }
+
+  const endDate = new Date(customEnd);
+  endDate.setHours(23, 59, 59, 999);
+  return endDate;
+}
+
+function filterTrends(
+  trends: AnalyticsTrend[],
+  dateRange: AnalyticsDateRange,
+  customStart: string,
+  customEnd: string,
+) {
+  const now = new Date();
+  const startDate = getStartDate(dateRange, customStart, now);
+  const endDate = getEndDate(customEnd);
+
+  return trends.filter((trend) => {
+    const trendDate = new Date(trend.date);
+
+    if (startDate && trendDate < startDate) {
+      return false;
+    }
+
+    if (endDate && trendDate > endDate) {
+      return false;
+    }
+
+    return true;
+  });
+}
 
 export default function Analytics() {
   const { id } = useParams();
-  const [data, setData] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<SurveyAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<AnalyticsDateRange>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
   useEffect(() => {
-    fetchAnalytics();
+    if (!id) {
+      setError("Survey ID is missing.");
+      setLoading(false);
+      return;
+    }
+
+    let isActive = true;
+
+    const loadAnalytics = async () => {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: serviceError } =
+        await surveyService.getAnalytics(id);
+
+      if (!isActive) {
+        return;
+      }
+
+      if (serviceError) {
+        setError(serviceError);
+        setAnalytics(null);
+      } else {
+        setAnalytics(data ?? null);
+      }
+
+      setLoading(false);
+    };
+
+    void loadAnalytics();
+
+    return () => {
+      isActive = false;
+    };
   }, [id]);
 
-  const fetchAnalytics = async () => {
-    setLoading(true);
-    const { data, error } = await surveyService.getAnalytics(id!);
-    
-    if (error) {
-      console.error(error);
-    } else if (data) {
-      setData(data);
+  const filteredTrends = useMemo(() => {
+    if (!analytics?.trends) {
+      return [];
     }
-    setLoading(false);
-  };
 
-  if (loading) return <div className="text-center py-20 animate-pulse text-neutral-400">Loading analytics...</div>;
-  if (!data) return <div className="text-center py-20">No data available.</div>;
+    return filterTrends(analytics.trends, dateRange, customStart, customEnd);
+  }, [analytics?.trends, customEnd, customStart, dateRange]);
+
+  const recentActivityCount =
+    analytics?.trends.length && analytics.trends.length > 0
+      ? analytics.trends[analytics.trends.length - 1].count
+      : 0;
+
+  if (loading)
+    return (
+      <div className="text-center py-20 animate-pulse text-neutral-400">
+        Loading analytics...
+      </div>
+    );
+
+  if (error) {
+    return <div className="text-center py-20 text-red-500">{error}</div>;
+  }
+
+  if (!analytics) {
+    return <div className="text-center py-20">No data available.</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto pb-20 px-4">
       <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2">{data.survey.title}</h1>
-          <p className="text-neutral-500 max-w-2xl">{data.survey.description}</p>
+          <h1 className="text-4xl font-bold tracking-tight mb-2">
+            {analytics.survey.title}
+          </h1>
+          <p className="text-neutral-500 max-w-2xl">
+            {analytics.survey.description}
+          </p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-semibold">
           <Users size={16} />
-          {data.totalResponses} Total Responses
+          {analytics.totalResponses} Total Responses
         </div>
       </div>
 
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StatCard 
-          label="Completion Rate" 
-          value="92%" 
-          icon={<CheckSquare className="text-emerald-500" />} 
+        <StatCard
+          label="Completion Rate"
+          value="92%"
+          icon={<CheckSquare className="text-emerald-500" />}
           sub="Estimated based on views"
         />
-        <StatCard 
-          label="Avg. Completion Time" 
-          value="4m 12s" 
-          icon={<Calendar className="text-amber-500" />} 
+        <StatCard
+          label="Avg. Completion Time"
+          value="4m 12s"
+          icon={<Calendar className="text-amber-500" />}
           sub="Stable over last 7 days"
         />
-        <StatCard 
-          label="Recent Activity" 
-          value={data.trends.length > 0 ? `+${data.trends[data.trends.length-1].count}` : '0'} 
-          icon={<MessageSquare className="text-indigo-500" />} 
+        <StatCard
+          label="Recent Activity"
+          value={recentActivityCount > 0 ? `+${recentActivityCount}` : "0"}
+          icon={<MessageSquare className="text-indigo-500" />}
           sub="Responses today"
         />
       </div>
 
-      {/* Trends Chart */}
-      {data.trends.length > 0 && (
-        <Card className="p-8 mb-10">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold">Response Trends</h2>
-            <p className="text-sm text-neutral-500 text-italic">Daily response volume over time</p>
-          </div>
-          <div className="h-75 w-full min-w-0">
-            <ResponsiveContainer width="100%" height="100%" debounce={100}>
-              <AreaChart data={data.trends}>
-                <defs>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 12, fill: '#94a3b8' }}
-                  minTickGap={30}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 12, fill: '#94a3b8' }}
-                />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="#6366f1" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorCount)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
+      <ResponseTrendsCard
+        trends={filteredTrends}
+        dateRange={dateRange}
+        customStart={customStart}
+        customEnd={customEnd}
+        onDateRangeChange={setDateRange}
+        onCustomStartChange={setCustomStart}
+        onCustomEndChange={setCustomEnd}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {data.questions.map((q: any, idx: number) => (
-          <Card key={q.id} className="p-8 flex flex-col min-w-0">
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">Question {idx + 1}</span>
-                <span className="text-xs text-neutral-400">• {q.type.replace('_', ' ')}</span>
-              </div>
-              <h3 className="text-lg font-bold leading-tight">
-                {q.text}
-              </h3>
-            </div>
-
-            <div className="h-75 w-full min-w-0">
-              {q.data.length > 0 ? (
-                <>
-                  {(q.type === 'multiple_choice' || q.type === 'rating') && (
-                    <BarChartComponent data={q.data} options={q.options} />
-                  )}
-                  {q.type === 'checkbox' && (
-                    <CheckboxChartComponent data={q.data} />
-                  )}
-                </>
-              ) : (
-                q.type !== 'short_answer' && (
-                  <div className="h-full flex flex-col items-center justify-center text-neutral-400 bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
-                    <MessageSquare size={32} className="mb-2 opacity-20" />
-                    <p className="italic text-sm">No responses yet.</p>
-                  </div>
-                )
-              )}
-              
-              {q.type === 'short_answer' && (
-                <div className="space-y-3 h-full overflow-y-auto pr-2 custom-scrollbar">
-                  {q.data.map((ans: string, i: number) => (
-                    <div key={i} className="p-4 bg-neutral-50 rounded-xl text-sm border border-neutral-100 leading-relaxed">
-                      "{ans}"
-                    </div>
-                  ))}
-                  {q.data.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-neutral-400 py-10">
-                      <MessageSquare size={32} className="mb-2 opacity-20" />
-                      <p className="italic text-sm">No responses yet.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Card>
+        {analytics.questions.map((question, index) => (
+          <AnalyticsQuestionCard
+            key={question.id}
+            question={question}
+            index={index}
+          />
         ))}
       </div>
     </div>
-  );
-}
-
-function StatCard({ label, value, icon, sub }: { label: string; value: string; icon: React.ReactNode; sub: string }) {
-  return (
-    <Card className="p-6">
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-neutral-50 rounded-lg">
-          {icon}
-        </div>
-        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">{label}</span>
-      </div>
-      <div className="text-3xl font-bold mb-1">{value}</div>
-      <div className="text-xs text-neutral-500 italic">{sub}</div>
-    </Card>
-  );
-}
-
-function BarChartComponent({ data, options }: { data: any[]; options?: string[] }) {
-  const counts: Record<string, number> = {};
-  
-  // Initialize counts for all options if provided
-  if (options && options.length > 0) {
-    options.forEach(opt => counts[String(opt)] = 0);
-  }
-
-  data.forEach(val => {
-    const key = String(val);
-    counts[key] = (counts[key] || 0) + 1;
-  });
-
-  const chartData = Object.entries(counts)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => {
-      // Try to sort numerically if possible (for ratings)
-      const numA = parseFloat(a.name);
-      const numB = parseFloat(b.name);
-      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-      return 0;
-    });
-
-  return (
-    <ResponsiveContainer width="100%" height="100%" debounce={100}>
-      <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
-        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
-        <XAxis type="number" hide />
-        <YAxis 
-          dataKey="name" 
-          type="category" 
-          axisLine={false} 
-          tickLine={false} 
-          width={120}
-          tick={{ fontSize: 11, fill: '#64748b' }}
-        />
-        <Tooltip 
-          cursor={{ fill: '#f8fafc' }}
-          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-        />
-        <Bar dataKey="value" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={24} />
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
-function CheckboxChartComponent({ data }: { data: any[][] }) {
-  const counts: Record<string, number> = {};
-  data.flat().forEach(val => {
-    if (val !== undefined && val !== null) {
-      const key = String(val);
-      counts[key] = (counts[key] || 0) + 1;
-    }
-  });
-
-  const chartData = Object.entries(counts).map(([name, value], index) => ({ 
-    name, 
-    value,
-    fill: COLORS[index % COLORS.length]
-  }));
-
-  if (chartData.length === 0) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center text-neutral-400">
-        <p className="italic text-sm">No data to display.</p>
-      </div>
-    );
-  }
-
-  return (
-    <ResponsiveContainer width="100%" height="100%" debounce={100}>
-      <PieChart>
-        <Pie
-          data={chartData}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={80}
-          paddingAngle={8}
-          dataKey="value"
-          stroke="none"
-        />
-        <Tooltip 
-          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-        />
-        <Legend 
-          verticalAlign="bottom" 
-          height={36} 
-          iconType="circle" 
-          formatter={(value) => <span className="text-xs text-neutral-600">{value}</span>}
-        />
-      </PieChart>
-    </ResponsiveContainer>
   );
 }

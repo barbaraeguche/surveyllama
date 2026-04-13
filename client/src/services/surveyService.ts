@@ -1,5 +1,5 @@
 import { apiRequest } from '../lib/api';
-import { Survey, Question } from '../types';
+import { Survey, SurveyAnalytics } from '../types';
 
 /**
  * Service for interacting with the survey API.
@@ -84,6 +84,6 @@ export const surveyService = {
    * @param id - The survey ID.
    */
   async getAnalytics(id: string) {
-    return apiRequest<any>(`/api/surveys/${id}/analytics`);
+    return apiRequest<SurveyAnalytics>(`/api/surveys/${id}/analytics`);
   }
 };

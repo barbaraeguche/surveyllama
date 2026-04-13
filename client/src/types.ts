@@ -48,6 +48,38 @@ export interface Survey {
   };
 }
 
+/** A single response count entry for analytics trend charts. */
+export interface AnalyticsTrend {
+  /** ISO date string representing the day of submitted responses. */
+  date: string;
+  /** Number of responses submitted on that day. */
+  count: number;
+}
+
+/** Raw answer value returned in analytics payloads. */
+export type AnalyticsAnswer = string | number | string[];
+
+/** Question analytics payload returned by the API. */
+export interface AnalyticsQuestion extends Question {
+  /** Aggregated answers associated with the question. */
+  data: AnalyticsAnswer[];
+}
+
+/** Date range presets supported by the analytics page. */
+export type AnalyticsDateRange = '7d' | '30d' | 'all' | 'custom';
+
+/** Analytics payload returned for a survey. */
+export interface SurveyAnalytics {
+  /** Survey metadata shown in the analytics header. */
+  survey: Survey;
+  /** Aggregated analytics for each survey question. */
+  questions: AnalyticsQuestion[];
+  /** Raw response count used for summary metrics. */
+  totalResponses: number;
+  /** Response activity grouped by day. */
+  trends: AnalyticsTrend[];
+}
+
 /**
  * Represents a user in the system.
  */
