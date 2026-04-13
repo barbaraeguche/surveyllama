@@ -2,6 +2,16 @@ import type { Response } from 'express';
 import { db } from '../config/firebase.ts';
 import type { AuthRequest } from '../middleware/auth.ts';
 
+interface AnalyticsResponseDocument {
+  id: string;
+  answers?: Record<string, unknown>;
+  submitted_at?: {
+    toDate?: () => Date;
+    _seconds?: number;
+  };
+  [key: string]: unknown;
+}
+
 /**
  * Fetches and processes analytics data for a survey.
  * Includes total responses, question-wise data, and response trends over time.
@@ -9,8 +19,8 @@ import type { AuthRequest } from '../middleware/auth.ts';
  * @param res - Express Response object.
  */
 export const getAnalytics = async (req: AuthRequest, res: Response) => {
-    const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
+  const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
 
   try {
     const surveyDoc = await db.collection('surveys').doc(surveyId).get();
@@ -23,22 +33,22 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
     }
 
     const responsesSnapshot = await db.collection('surveys').doc(surveyId).collection('responses').get();
-    const responses = responsesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const responses: AnalyticsResponseDocument[] = responsesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const questionsSnapshot = await db.collection('surveys').doc(surveyId).collection('questions').orderBy('order_index', 'asc').get();
     const questions = questionsSnapshot.docs.map(doc => {
       const qData = doc.data();
       // Use the id field from data if it exists (legacy), otherwise use the document ID
       const qId = qData.id || doc.id;
-      
-       // Process responses for this question
-      const answers = responses.map((r: any) => {
+
+      // Process responses for this question
+      const answers = responses.map((r) => {
         const answer = r.answers ? r.answers[qId] : undefined;
         return answer;
       }).filter(a => a !== undefined);
 
-      return { 
-        id: qId, 
+      return {
+        id: qId,
         ...qData,
         data: answers
       };
@@ -46,8 +56,13 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
 
     // Process trends (responses per day)
     const trendsMap: Record<string, number> = {};
-    responses.forEach((r: any) => {
-      const date = r.submitted_at?.toDate?.() || new Date(r.submitted_at?._seconds * 1000);
+    responses.forEach((r) => {
+      const timestampDate = r.submitted_at?.toDate?.();
+      const seconds = r.submitted_at?._seconds;
+      const date = timestampDate ?? (typeof seconds === 'number' ? new Date(seconds * 1000) : undefined);
+      if (!date) {
+        return;
+      }
       const dateStr = date.toISOString().split('T')[0];
       trendsMap[dateStr] = (trendsMap[dateStr] || 0) + 1;
     });

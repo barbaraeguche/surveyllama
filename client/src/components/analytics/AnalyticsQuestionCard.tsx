@@ -81,11 +81,21 @@ function QuestionVisualization({ question }: { question: AnalyticsQuestion }) {
   }
 
   if (question.type === "checkbox") {
-    const checkboxResponses = question.data.filter((value): value is string[] =>
-      Array.isArray(value),
+    const chartData = question.data.filter(
+      (value): value is string | number =>
+        typeof value === "string" || typeof value === "number",
     );
 
-    return <CheckboxChartComponent data={checkboxResponses} />;
+    if (chartData.length > 0) {
+      return <BarChartComponent data={chartData} options={question.options} />;
+    }
+
+    // Fallback for legacy data stored as arrays before type behavior swap.
+    const legacyCheckboxResponses = question.data.filter(
+      (value): value is string[] => Array.isArray(value),
+    );
+
+    return <CheckboxChartComponent data={legacyCheckboxResponses} />;
   }
 
   if (question.type === "rating") {

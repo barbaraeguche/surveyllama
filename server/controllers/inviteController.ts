@@ -4,6 +4,18 @@ import { db } from '../config/firebase.ts';
 import admin from '../config/firebase.ts';
 import { EmailService } from '../services/emailService.ts';
 
+interface SurveyInviteData {
+  admin_id: string;
+  is_published: boolean;
+  title: string;
+  description?: string;
+}
+
+interface InviteAttachmentInput {
+  filename: string;
+  path: string;
+}
+
 /**
  * Controller for sending survey invitations to a list of emails.
  * @param req - AuthRequest containing surveyId, emails, surveyUrl, and optional attachments.
@@ -17,14 +29,14 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
   }
 
   // Fetch survey details
-  let surveyData: any = null;
+  let surveyData: SurveyInviteData | null = null;
   try {
     const surveyDoc = await db.collection('surveys').doc(surveyId).get();
     if (!surveyDoc.exists) {
       return res.status(404).json({ error: 'Survey not found' });
     }
-    surveyData = surveyDoc.data();
-    
+    surveyData = surveyDoc.data() as SurveyInviteData;
+
     // Check ownership
     if (surveyData.admin_id !== req.user?.uid) {
       return res.status(403).json({ error: 'Unauthorized: You do not own this survey' });
@@ -32,8 +44,8 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
 
     // Check if survey is published
     if (!surveyData.is_published) {
-      return res.status(400).json({ 
-        error: 'Cannot send invitations for an unpublished survey. Please publish it first.' 
+      return res.status(400).json({
+        error: 'Cannot send invitations for an unpublished survey. Please publish it first.'
       });
     }
   } catch (err) {
@@ -64,10 +76,12 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
               <p style="color: #9ca3af; font-size: 12px;">This is an automated message from SurveyLlama.</p>
             </div>
           `,
-          attachments: attachments && Array.isArray(attachments) ? attachments.map((att: any) => ({
-            filename: att.filename,
-            path: att.path
-          })) : []
+          attachments: attachments && Array.isArray(attachments)
+            ? (attachments as InviteAttachmentInput[]).map((att) => ({
+              filename: att.filename,
+              path: att.path,
+            }))
+            : []
         });
 
         // Log invitation to Firestore
@@ -81,7 +95,7 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
         return { email, status: 'sent' };
       } catch (err) {
         console.error(`Failed to send email to ${email}:`, err);
-        
+
         // Log failed invitation
         await db.collection('surveys').doc(surveyId).collection('invitations').add({
           email,
@@ -100,9 +114,9 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
       return res.status(500).json({ error: 'Failed to send all invitations. Check SMTP configuration.' });
     }
 
-    res.json({ 
+    res.json({
       message: `Successfully sent ${emails.length - failed.length} invitations.`,
-      results 
+      results
     });
   } catch (error) {
     console.error('Error sending invitations:', error);

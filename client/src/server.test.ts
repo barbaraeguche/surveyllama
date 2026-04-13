@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
+import type { Request, Response, NextFunction } from 'express';
 
 // Mock firebase-admin before importing app
 vi.mock('firebase-admin', () => ({
@@ -53,7 +54,7 @@ vi.mock('firebase-admin', () => ({
 // Mock vite since it might be imported in server.ts
 vi.mock('vite', () => ({
   createServer: vi.fn(() => Promise.resolve({
-    middlewares: (req: any, res: any, next: any) => next(),
+    middlewares: (_req: Request, _res: Response, next: NextFunction) => next(),
   })),
 }));
 
