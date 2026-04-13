@@ -1,5 +1,5 @@
 import { apiRequest } from '../lib/api';
-import { Survey, Question } from '../types';
+import { Survey, SurveyAnalytics, SurveyUpsertPayload } from '../types';
 
 /**
  * Service for interacting with the survey API.
@@ -24,7 +24,7 @@ export const surveyService = {
    * Creates a new survey.
    * @param surveyData - The survey data.
    */
-  async create(surveyData: any) {
+  async create(surveyData: SurveyUpsertPayload) {
     return apiRequest<{ id: string }>('/api/surveys', {
       method: 'POST',
       body: JSON.stringify(surveyData),
@@ -52,7 +52,7 @@ export const surveyService = {
    * @param id - The survey ID.
    * @param surveyData - The updated survey data.
    */
-  async update(id: string, surveyData: any) {
+  async update(id: string, surveyData: SurveyUpsertPayload) {
     return apiRequest(`/api/surveys/${id}`, {
       method: 'PUT',
       body: JSON.stringify(surveyData),
@@ -84,6 +84,6 @@ export const surveyService = {
    * @param id - The survey ID.
    */
   async getAnalytics(id: string) {
-    return apiRequest<any>(`/api/surveys/${id}/analytics`);
+    return apiRequest<SurveyAnalytics>(`/api/surveys/${id}/analytics`);
   }
 };
