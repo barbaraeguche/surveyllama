@@ -149,6 +149,10 @@ export default function SurveyView() {
       <div className="text-center py-20">This survey is not yet published.</div>
     );
 
+  if (survey.expiry_date && new Date(survey.expiry_date) < new Date()) {
+    return <div className="text-center py-20">This survey has expired and is no longer accepting responses.</div>
+  }
+
   if (submitted) {
     return (
       <div className="max-w-md mx-auto mt-20 text-center">
