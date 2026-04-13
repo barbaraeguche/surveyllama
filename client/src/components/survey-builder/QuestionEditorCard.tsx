@@ -77,8 +77,8 @@ export default function QuestionEditorCard({
                 <div
                   className={`w-4 h-4 border border-neutral-300 ${
                     question.type === "multiple_choice"
-                      ? "rounded-full"
-                      : "rounded"
+                      ? "rounded"
+                      : "rounded-full"
                   }`}
                 />
                 <Input
