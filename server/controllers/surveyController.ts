@@ -3,6 +3,13 @@ import { db } from '../config/firebase.ts';
 import admin from '../config/firebase.ts';
 import type { AuthRequest } from '../middleware/auth.ts';
 
+interface SurveyQuestionInput {
+  id?: string;
+  required?: boolean;
+  options?: string[];
+  [key: string]: unknown;
+}
+
 /**
  * Fetches all surveys created by the authenticated user.
  * @param req - AuthRequest containing user info.
@@ -21,14 +28,15 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
     const snapshot = await db.collection('surveys')
       .where('admin_id', '==', req.user.uid)
       .get();
-    
+
     const surveys = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(surveys);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const details = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error fetching surveys:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch surveys',
-      details: error.message 
+      details,
     });
   }
 };
@@ -39,9 +47,9 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
  * @param res - Express Response object.
  */
 export const createSurvey = async (req: AuthRequest, res: Response) => {
-  
+
   const { title, description, expiry_date, questions, settings } = req.body;
-  
+
   try {
     const surveyRef = db.collection('surveys').doc();
     const surveyId = surveyRef.id;
@@ -61,7 +69,7 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
     });
 
     const questionsBatch = db.batch();
-    questions.forEach((q: any, index: number) => {
+    (questions as SurveyQuestionInput[]).forEach((q, index: number) => {
       // Use the provided question ID if it exists, otherwise generate a new one
       const qId = q.id || db.collection('surveys').doc(surveyId).collection('questions').doc().id;
       const qRef = db.collection('surveys').doc(surveyId).collection('questions').doc(qId);
@@ -113,7 +121,7 @@ export const publishSurvey = async (req: AuthRequest, res: Response) => {
     const surveyRef = db.collection('surveys').doc(surveyId);
     const surveyDoc = await surveyRef.get();
     const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
-    
+
     if (!surveyDoc.exists) {
       return res.status(404).json({ error: 'Survey not found' });
     }
@@ -204,21 +212,21 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
     if (questions && Array.isArray(questions)) {
       const questionsSnapshot = await surveyRef.collection('questions').get();
       const batch = db.batch();
-      
+
       // Delete existing questions
       questionsSnapshot.docs.forEach(doc => {
         batch.delete(doc.ref);
       });
 
       // Add new questions
-      questions.forEach((q: any, index: number) => {
+      (questions as SurveyQuestionInput[]).forEach((q, index: number) => {
         // Use the provided question ID if it exists, otherwise generate one
         const qId = q.id || surveyRef.collection('questions').doc().id;
         const qRef = surveyRef.collection('questions').doc(qId);
-        
+
         // Remove id from the data to avoid redundancy and potential overwrites
         const { id: _, ...qData } = q;
-       
+
         batch.set(qRef, {
           ...qData,
           order_index: index,
