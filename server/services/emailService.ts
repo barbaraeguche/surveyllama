@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import type Mail from 'nodemailer/lib/mailer';
 
 /**
  * Configuration for the SMTP transporter.
@@ -82,7 +83,7 @@ export class EmailService {
     subject: string;
     text: string;
     html: string;
-    attachments?: any[];
+    attachments?: Mail.Attachment[];
   }) {
     const transporter = await this.getTransporter();
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@surveyllama.com';
