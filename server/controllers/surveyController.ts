@@ -10,6 +10,26 @@ interface SurveyQuestionInput {
   [key: string]: unknown;
 }
 
+/** 
+ * Strips all HTML tags from a string to prevent stored XSS.
+ * @param value - The string to sanitize.
+ * @returns A sanitized string with HTML tags removed.
+ */
+function stripHtml(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  return value.replace(/<[^>]*>/g, '').trim();
+}
+
+/**
+ * Sanitizes an array of options by stripping HTML tags and removing empty strings.
+ * @param options - The array of options to sanitize.
+ * @returns A sanitized array of options.
+ */
+function sanitizeOptions(options: unknown): string[] {
+  if (!Array.isArray(options)) return [];
+  return options.map(stripHtml).filter((o) => o.length > 0);
+}
+
 /**
  * Fetches all surveys created by the authenticated user.
  * @param req - AuthRequest containing user info.
@@ -55,8 +75,8 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
     const surveyId = surveyRef.id;
     const userID = Array.isArray(req.user?.uid) ? req.user.uid[0] : req.user?.uid;
     await surveyRef.set({
-      title,
-      description,
+      title: stripHtml(title),
+      description: stripHtml(description),
       expiry_date,
       admin_id: userID,
       is_published: false,
@@ -77,8 +97,9 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
       const { id, ...qData } = q;
       questionsBatch.set(qRef, {
         ...qData,
+        text: stripHtml(qData.text),
+        options: sanitizeOptions(qData.options),
         order_index: index,
-        options: qData.options || [],
         required: !!q.required
       });
     });
@@ -201,8 +222,8 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
 
     // Update survey metadata
     await surveyRef.update({
-      title,
-      description,
+      title: stripHtml(title),
+      description: stripHtml(description),
       expiry_date,
       settings: settings || surveyData?.settings,
       updated_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -229,8 +250,9 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
 
         batch.set(qRef, {
           ...qData,
+          text: stripHtml(qData.text),
+          options: sanitizeOptions(qData.options),
           order_index: index,
-          options: q.options || [],
           required: !!q.required
         });
       });
