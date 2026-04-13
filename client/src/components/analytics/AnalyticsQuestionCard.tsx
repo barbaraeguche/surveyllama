@@ -1,7 +1,7 @@
 import { MessageSquare } from "lucide-react";
 
-import BarChartComponent from "../BarChartComponent";
-import CheckboxChartComponent from "../CheckboxChartComponent";
+import BarChartComponent from "./BarChartComponent";
+import CheckboxChartComponent from "./CheckboxChartComponent";
 import { Card } from "../UI";
 import { AnalyticsQuestion } from "../../types";
 
