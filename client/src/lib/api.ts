@@ -1,5 +1,9 @@
 import { logger } from './logger';
 
+interface ApiErrorPayload {
+  error?: string;
+}
+
 /**
  * Standard structure for API responses.
  */
@@ -40,8 +44,8 @@ export async function apiRequest<T>(
     }
 
     const contentType = response.headers.get('content-type');
-    let data: any = {};
-    
+    let data: unknown = {};
+
     if (contentType && contentType.includes('application/json')) {
       data = await response.json();
     } else {
@@ -51,14 +55,17 @@ export async function apiRequest<T>(
     }
 
     if (!response.ok) {
-      const errorMessage = data.error || `Request failed with status ${response.status}`;
+      const errorMessage =
+        typeof data === 'object' && data !== null && 'error' in data && typeof (data as ApiErrorPayload).error === 'string'
+          ? (data as ApiErrorPayload).error
+          : `Request failed with status ${response.status}`;
       logger.error(`API Error: ${method} ${url}`, { status: response.status, error: errorMessage });
       return { error: errorMessage };
     }
 
     logger.debug(`API Success: ${method} ${url}`, data);
-    return { data };
-  } catch (error: any) {
+    return { data: data as T };
+  } catch (error: unknown) {
     logger.error(`API Network Error: ${method} ${url}`, error);
     return { error: 'A network error occurred. Please check your connection.' };
   }
