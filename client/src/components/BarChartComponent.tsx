@@ -29,7 +29,7 @@ function sortChartData(a: BarChartDatum, b: BarChartDatum) {
     return numA - numB;
   }
 
-  return a.name.localeCompare(b.name);
+  return a.name.localeCompare(b.name, undefined, { numeric: true });
 }
 
 export default function BarChartComponent({
