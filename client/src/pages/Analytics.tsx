@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { CheckSquare, Calendar, MessageSquare, Users } from "lucide-react";
+import { useParams, Link } from "react-router-dom";
+import {
+  CheckSquare,
+  Calendar,
+  MessageSquare,
+  Users,
+  ArrowLeft,
+} from "lucide-react";
 
 import StatCard from "../components/StatCard";
 import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard";
@@ -143,6 +149,13 @@ export default function Analytics() {
 
   return (
     <div className="max-w-6xl mx-auto pb-20 px-4">
+      <Link
+        to="/dashboard"
+        className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors"
+      >
+        <ArrowLeft size={18} />
+        Back to Dashboard
+      </Link>
       <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold tracking-tight mb-2">
