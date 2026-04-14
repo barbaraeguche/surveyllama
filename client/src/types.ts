@@ -1,121 +1,121 @@
 /**
- * Supported question types in a survey.
+ * supported question types in a survey.
  */
 export type QuestionType = 'multiple_choice' | 'short_answer' | 'checkbox' | 'rating';
 
-/** Supported display orders for survey questions. */
+/** supported display orders for survey questions. */
 export type QuestionDisplayOrder = 'sequential' | 'random';
 
 /**
- * Represents a single question in a survey.
+ * represents a single question in a survey.
  */
 export interface Question {
-  /** Unique identifier for the question. */
+  /** unique identifier for the question. */
   id: string;
-  /** The type of question (e.g., multiple choice, short answer). */
+  /** the type of question (e.g., multiple choice, short answer). */
   type: QuestionType;
-  /** The question text displayed to the user. */
+  /** the question text displayed to the user. */
   text: string;
-  /** List of options for multiple choice or checkbox questions. */
+  /** list of options for multiple choice or checkbox questions. */
   options: string[];
-  /** Whether the question is mandatory. */
+  /** whether the question is mandatory. */
   required: boolean;
 }
 
 /**
- * Represents a survey created by an admin.
+ * represents a survey created by an admin.
  */
 export interface Survey {
-  /** Unique identifier for the survey. */
+  /** unique identifier for the survey. */
   id: string;
-  /** The title of the survey. */
+  /** the title of the survey. */
   title: string;
-  /** A brief description of the survey's purpose. */
+  /** a brief description of the survey's purpose. */
   description: string;
-  /** The date when the survey expires. */
+  /** the date when the survey expires. */
   expiry_date: string;
-  /** Whether the survey is currently published and accepting responses. */
+  /** whether the survey is currently published and accepting responses. */
   is_published: boolean;
-  /** The timestamp when the survey was created. */
+  /** the timestamp when the survey was created. */
   created_at: string;
-  /** Optional list of questions associated with the survey. */
+  /** optional list of questions associated with the survey. */
   questions?: Question[];
-  /** Optional settings for the survey's behavior. */
+  /** optional settings for the survey's behavior. */
   settings?: SurveySettings;
 }
 
-/** Configurable behavior for a survey. */
+/** configurable behavior for a survey. */
 export interface SurveySettings {
-  /** Whether responses are anonymous. */
+  /** whether responses are anonymous. */
   is_anonymous: boolean;
-  /** The order in which questions are displayed. */
+  /** the order in which questions are displayed. */
   display_order: QuestionDisplayOrder;
-  /** The message shown after a user submits their response. */
+  /** the message shown after a user submits their response. */
   thank_you_message: string;
 }
 
-/** Payload used to create or update a survey. */
+/** payload used to create or update a survey. */
 export interface SurveyUpsertPayload {
-  /** The title of the survey. */
+  /** the title of the survey. */
   title: string;
-  /** Optional description shown to participants. */
+  /** optional description shown to participants. */
   description: string;
-  /** Optional survey expiration date. */
+  /** optional survey expiration date. */
   expiry_date: string;
-  /** Questions included in the survey. */
+  /** questions included in the survey. */
   questions: Question[];
-  /** Settings that control survey behavior. */
+  /** settings that control survey behavior. */
   settings: SurveySettings;
 }
 
-/** A single response count entry for analytics trend charts. */
+/** a single response count entry for analytics trend charts. */
 export interface AnalyticsTrend {
   /** ISO date string representing the day of submitted responses. */
   date: string;
-  /** Number of responses submitted on that day. */
+  /** number of responses submitted on that day. */
   count: number;
 }
 
-/** Raw answer value returned in analytics payloads. */
+/** raw answer value returned in analytics payloads. */
 export type AnalyticsAnswer = string | number | string[];
 
-/** Question analytics payload returned by the API. */
+/** question analytics payload returned by the API. */
 export interface AnalyticsQuestion extends Question {
-  /** Aggregated answers associated with the question. */
+  /** aggregated answers associated with the question. */
   data: AnalyticsAnswer[];
 }
 
-/** Date range presets supported by the analytics page. */
+/** date range presets supported by the analytics page. */
 export type AnalyticsDateRange = '7d' | '30d' | 'all' | 'custom';
 
-/** Analytics payload returned for a survey. */
+/** analytics payload returned for a survey. */
 export interface SurveyAnalytics {
-  /** Survey metadata shown in the analytics header. */
+  /** survey metadata shown in the analytics header. */
   survey: Survey;
-  /** Aggregated analytics for each survey question. */
+  /** aggregated analytics for each survey question. */
   questions: AnalyticsQuestion[];
-  /** Raw response count used for summary metrics. */
+  /** raw response count used for summary metrics. */
   totalResponses: number;
-  /** Response activity grouped by day. */
+  /** response activity grouped by day. */
   trends: AnalyticsTrend[];
 }
 
 /**
- * Represents a user in the system.
+ * represents a user in the system.
  */
 export interface User {
-  /** Unique identifier for the user. */
+  /** unique identifier for the user. */
   id: number;
-  /** The user's username. */
+  /** the user's username. */
   username: string;
 }
 
 /**
- * Response returned from the authentication API.
+ * response returned from the authentication API.
  */
 export interface AuthResponse {
-  /** The JWT token for authenticating subsequent requests. */
+  /** the JWT token for authenticating subsequent requests. */
   token: string;
-  /** The authenticated user's information. */
+  /** the authenticated user's information. */
   user: User;
 }

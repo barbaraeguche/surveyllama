@@ -45,7 +45,7 @@ export default function Navbar() {
           <span className="tracking-tight">SurveyLlama</span>
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* desktop navigation */}
         <div className="hidden md:flex items-center gap-1">
           {token ? (
             <>
@@ -95,7 +95,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* mobile menu toggle */}
         <div className="md:hidden flex items-center gap-2">
           {token && (
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold uppercase">
@@ -112,7 +112,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation Overlay */}
+      {/* mobile navigation overlay */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div

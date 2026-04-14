@@ -13,10 +13,10 @@ interface AnalyticsResponseDocument {
 }
 
 /**
- * Fetches and processes analytics data for a survey.
- * Includes total responses, question-wise data, and response trends over time.
- * @param req - AuthRequest with survey ID in params.
- * @param res - Express Response object.
+ * fetches and processes analytics data for a survey.
+ * includes total responses, question-wise data, and response trends over time.
+ * @param req - authRequest with survey ID in params.
+ * @param res - express Response object.
  */
 export const getAnalytics = async (req: AuthRequest, res: Response) => {
   const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -38,14 +38,13 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
     const questionsSnapshot = await db.collection('surveys').doc(surveyId).collection('questions').orderBy('order_index', 'asc').get();
     const questions = questionsSnapshot.docs.map(doc => {
       const qData = doc.data();
-      // Use the id field from data if it exists (legacy), otherwise use the document ID
+      // use the id field from data if it exists (legacy), otherwise use the document ID
       const qId = qData.id || doc.id;
 
-      // Process responses for this question
-      const answers = responses.map((r) => {
-        const answer = r.answers ? r.answers[qId] : undefined;
-        return answer;
-      }).filter(a => a !== undefined);
+      // process responses for this question
+      const answers = responses
+        .map((r) => r.answers ? r.answers[qId] : undefined)
+        .filter(a => a !== undefined);
 
       return {
         id: qId,
@@ -54,7 +53,7 @@ export const getAnalytics = async (req: AuthRequest, res: Response) => {
       };
     });
 
-    // Process trends (responses per day)
+    // process trends (responses per day)
     const trendsMap: Record<string, number> = {};
     responses.forEach((r) => {
       const timestampDate = r.submitted_at?.toDate?.();

@@ -18,13 +18,13 @@ import QuestionTypeActions from "@/client/src/components/surveyBuilder/questionT
 
 const DEFAULT_THANK_YOU_MESSAGE = "Thank you for participating in our survey!";
 
-/** Matches unchanged auto-generated option labels such as "Option 1", "Option 12". */
+/** matches unchanged auto-generated option labels such as "Option 1", "Option 12". */
 const PLACEHOLDER_OPTION_PATTERN = /^Option \d+$/i;
 
-/** 
- * Strips all HTML tags from a string to prevent stored XSS.
- * @param value - The string to sanitize.
- * @returns A sanitized string with HTML tags removed.
+/**
+ * strips all HTML tags from a string to prevent stored XSS.
+ * @param value - the string to sanitize.
+ * @returns a sanitized string with HTML tags removed.
  */
 function sanitizeText(value: string): string {
   return value.replace(/<[^>]*>/g, "").trim();

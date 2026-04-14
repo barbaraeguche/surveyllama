@@ -3,9 +3,9 @@ import { db } from '../config/firebase.ts';
 import admin from '../config/firebase.ts';
 
 /**
- * Submits a response to a published survey.
- * @param req - Express Request object with survey ID in params and response data in body.
- * @param res - Express Response object.
+ * submits a response to a published survey.
+ * @param req - express Request object with survey ID in params and response data in body.
+ * @param res - express Response object.
  */
 export const submitResponse = async (req: Request, res: Response) => {
   const { email, answers, token } = req.body;
@@ -32,7 +32,7 @@ export const submitResponse = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Survey has expired' });
     }
 
-    // Validate token
+    // validate token
     const invitationRef = surveyRef.collection('invitations').doc(token);
     const invitationDoc = await invitationRef.get();
 
@@ -44,14 +44,14 @@ export const submitResponse = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'This invitation link has already been used' });
     }
 
-    // Add response to subcollection
+    // add response to subcollection
     await surveyRef.collection('responses').add({
       email: invitationDoc.data()?.email || email || 'anonymous',
       answers,
       submitted_at: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Mark token as used
+    // mark token as used
     await invitationRef.update({ used: true });
 
     res.json({ success: true });

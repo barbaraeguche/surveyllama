@@ -1,18 +1,18 @@
 /**
- * Service for generating email templates.
+ * service for generating email templates.
  */
 export class EmailTemplateService {
   /**
-   * Generates the HTML and text content for a survey invitation.
-   * @param title - Survey title.
-   * @param description - Survey description.
-   * @param surveyUrl - Link to the survey.
-   * @returns Object containing html and text versions of the email.
+   * generates the html and text content for a survey invitation.
+   * @param title - survey title.
+   * @param description - survey description.
+   * @param surveyUrl - link to the survey.
+   * @returns object containing html and text versions of the email.
    */
   static getSurveyInvitationTemplate(title: string, description: string | undefined, surveyUrl: string) {
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">

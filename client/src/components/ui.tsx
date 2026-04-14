@@ -3,14 +3,14 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 /**
- * Utility function to merge Tailwind CSS classes.
+ * utility function to merge Tailwind CSS classes.
  */
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Reusable Button component with multiple variants and sizes.
+ * reusable Button component with multiple variants and sizes.
  */
 export function Button({
   className,
@@ -18,9 +18,9 @@ export function Button({
   size = "md",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  /** Visual style of the button. */
+  /** visual style of the button. */
   variant?: "primary" | "outline" | "ghost" | "danger";
-  /** Size of the button. */
+  /** size of the button. */
   size?: "sm" | "md" | "lg";
 }) {
   const variants = {
@@ -51,7 +51,7 @@ export function Button({
 }
 
 /**
- * Reusable Input component with consistent styling.
+ * reusable Input component with consistent styling.
  */
 export function Input({
   className,
@@ -69,7 +69,7 @@ export function Input({
 }
 
 /**
- * Reusable Card component for containing content.
+ * reusable Card component for containing content.
  */
 export function Card({
   className,

@@ -19,9 +19,9 @@ interface InviteAttachmentInput {
 }
 
 /**
- * Controller for sending survey invitations to a list of emails.
- * @param req - AuthRequest containing surveyId, emails, and optional attachments.
- * @param res - Express Response object.
+ * controller for sending survey invitations to a list of emails.
+ * @param req - authRequest containing surveyId, emails, and optional attachments.
+ * @param res - express Response object.
  */
 export const sendInvitations = async (req: AuthRequest, res: Response) => {
   const { surveyId, emails, surveyUrl, attachments } = req.body;
@@ -30,7 +30,7 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'Missing required fields: surveyId, emails' });
   }
 
-  // Fetch survey details
+  // fetch survey details
   let surveyData: SurveyInviteData | null = null;
   try {
     const surveyDoc = await db.collection('surveys').doc(surveyId).get();
@@ -39,12 +39,12 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
     }
     surveyData = surveyDoc.data() as SurveyInviteData;
 
-    // Check ownership
+    // check ownership
     if (surveyData.admin_id !== req.user?.uid) {
       return res.status(403).json({ error: 'Unauthorized: You do not own this survey' });
     }
 
-    // Check if survey is published
+    // check if survey is published
     if (!surveyData.is_published) {
       return res.status(400).json({
         error: 'Cannot send invitations for an unpublished survey. Please publish it first.'
@@ -75,7 +75,7 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
             : []
         });
 
-        // Store token as doc ID for O(1) lookup on submission
+        // store token as doc ID for O(1) lookup on submission
         await db.collection('surveys').doc(surveyId).collection('invitations').doc(token).set({
           email,
           used: false,

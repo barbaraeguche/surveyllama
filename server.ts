@@ -17,11 +17,11 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Cast the router to RequestHandler to avoid overload ambiguity with mixed Express typings.
+// cast the router to requestHandler to avoid overload ambiguity with mixed express typings
 app.use('/api/surveys', surveyRoutes as unknown as RequestHandler);
 
 async function startServer() {
-  // Firebase App Hosting PORT is default to 8080, so add fallback to 3000 for local dev.
+  // firebase app hosting port is default to 8080, so add fallback to 3000 for local dev
   const port = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 3000;
 
   if (isNaN(port)) {
@@ -30,7 +30,7 @@ async function startServer() {
   }
 
   console.log('Starting server...');
-  // Use Vite middleware in development for hot module replacement and fast refresh
+  // use vite middleware in development for hot module replacement and fast refresh
   if (process.env.NODE_ENV !== 'production') {
     console.log('Initializing Vite middleware...');
     const vite = await createViteServer({
@@ -53,5 +53,5 @@ async function startServer() {
 }
 
 if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
-  startServer();
+  startServer().then(undefined);
 }

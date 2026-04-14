@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
 
 /**
- * Configuration for the SMTP transporter.
+ * configuration for the SMTP transporter.
  */
 interface SMTPConfig {
   host: string;
@@ -17,14 +17,14 @@ interface SMTPConfig {
 }
 
 /**
- * Service for sending emails using Nodemailer.
+ * service for sending emails using Nodemailer.
  */
 export class EmailService {
   private static transporter: nodemailer.Transporter | null = null;
 
   /**
-   * Initializes the SMTP transporter based on environment variables.
-   * Falls back to Ethereal (test) account if credentials are missing.
+   * initializes the SMTP transporter based on environment variables.
+   * falls back to Ethereal (test) account if credentials are missing.
    */
   private static async getTransporter(): Promise<nodemailer.Transporter> {
     if (this.transporter) return this.transporter;
@@ -39,13 +39,13 @@ export class EmailService {
       },
     };
 
-    // Specific settings for Gmail
+    // specific settings for Gmail
     if (process.env.SMTP_HOST === 'smtp.gmail.com') {
       smtpConfig.service = 'gmail';
       smtpConfig.requireTLS = true;
     }
 
-    // Fallback to Ethereal if no credentials
+    // fallback to Ethereal if no credentials
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.warn('SMTP credentials missing. Using Ethereal test account.');
       const testAccount = await nodemailer.createTestAccount();
@@ -65,12 +65,12 @@ export class EmailService {
   }
 
   /**
-   * Sends an email.
-   * @param to - Recipient email address.
-   * @param subject - Email subject.
-   * @param text - Plain text content.
-   * @param html - HTML content.
-   * @param attachments - Optional attachments.
+   * sends an email.
+   * @param to - recipient email address.
+   * @param subject - email subject.
+   * @param text - plain text content.
+   * @param html - html content.
+   * @param attachments - optional attachments.
    */
   static async sendEmail({
     to,

@@ -4,27 +4,27 @@ import { Survey, SurveyAnalytics, SurveyUpsertPayload } from '../types';
 type SurveyAnswerValue = string | number | boolean | string[] | null;
 
 /**
- * Service for interacting with the survey API.
+ * service for interacting with the survey API.
  */
 export const surveyService = {
   /**
-   * Fetches all surveys for the current user.
+   * fetches all surveys for the current user.
    */
   async getAll() {
     return apiRequest<Survey[]>('/api/surveys');
   },
 
   /**
-   * Fetches a single survey by ID.
-   * @param id - The survey ID.
+   * fetches a single survey by ID.
+   * @param id - the survey ID.
    */
   async getById(id: string) {
     return apiRequest<Survey>(`/api/surveys/${id}`);
   },
 
   /**
-   * Creates a new survey.
-   * @param surveyData - The survey data.
+   * creates a new survey.
+   * @param surveyData - the survey data.
    */
   async create(surveyData: SurveyUpsertPayload) {
     return apiRequest<{ id: string }>('/api/surveys', {
@@ -34,25 +34,25 @@ export const surveyService = {
   },
 
   /**
-   * Publishes a survey.
-   * @param id - The survey ID.
+   * publishes a survey.
+   * @param id - the survey ID.
    */
   async publish(id: string) {
     return apiRequest(`/api/surveys/${id}/publish`, { method: 'PATCH' });
   },
 
   /**
-   * Unpublishes a survey.
-   * @param id - The survey ID.
+   * unpublishes a survey.
+   * @param id - the survey ID.
    */
   async unpublish(id: string) {
     return apiRequest(`/api/surveys/${id}/unpublish`, { method: 'PATCH' });
   },
 
   /**
-   * Updates an existing survey.
-   * @param id - The survey ID.
-   * @param surveyData - The updated survey data.
+   * updates an existing survey.
+   * @param id - the survey ID.
+   * @param surveyData - the updated survey data.
    */
   async update(id: string, surveyData: SurveyUpsertPayload) {
     return apiRequest(`/api/surveys/${id}`, {
@@ -62,17 +62,17 @@ export const surveyService = {
   },
 
   /**
-   * Deletes a survey.
-   * @param id - The survey ID.
+   * deletes a survey.
+   * @param id - the survey ID.
    */
   async delete(id: string) {
     return apiRequest(`/api/surveys/${id}`, { method: 'DELETE' });
   },
 
   /**
-   * Submits a response to a survey.
-   * @param surveyId - The survey ID.
-   * @param responseData - The response data.
+   * submits a response to a survey.
+   * @param surveyId - the survey ID.
+   * @param responseData - the response data.
    */
   async submitResponse(surveyId: string, responseData: { email: string; answers: Record<string, SurveyAnswerValue>; token?: string | null }) {
     return apiRequest(`/api/surveys/${surveyId}/responses`, {
@@ -82,8 +82,8 @@ export const surveyService = {
   },
 
   /**
-   * Fetches analytics for a survey.
-   * @param id - The survey ID.
+   * fetches analytics for a survey.
+   * @param id - the survey ID.
    */
   async getAnalytics(id: string) {
     return apiRequest<SurveyAnalytics>(`/api/surveys/${id}/analytics`);

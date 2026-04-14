@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import type { ReactNode } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/home';
 import Login from './pages/login';
@@ -17,18 +17,18 @@ import { useLocation } from 'react-router-dom';
 
 function AppContent() {
   /**
-   * ProtectedRoute component to guard routes that require authentication. It checks the auth context for a token and loading state. If loading, it shows a loading message. If no token is found, it redirects to the login page. Otherwise, it renders the child components.
-   * This ensures that only authenticated users can access certain routes like the dashboard, survey creation, editing, analytics, and invitation sending pages.
+   * protectedRoute component to guard routes that require authentication. it checks the auth context for a token and loading state. if loading, it shows a loading message. if no token is found, it redirects to the login page. otherwise, it renders the child components.
+   * this ensures that only authenticated users can access certain routes like the dashboard, survey creation, editing, analytics, and invitation sending pages.
    */
   const { token, loading } = useAuth();
   const location = useLocation();
 
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    // If the authentication state is still loading, show a loading message
+  const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+    // if the authentication state is still loading, show a loading message
     if (loading) return <LoadingSpinner />;
-    // If no token is found, redirect to the login page
+    // if no token is found, redirect to the login page
     if (!token) return <Navigate to="/login" replace />;
-    // If a token is found, render the child components
+    // if a token is found, render the child components
     return <>{children}</>;
   };
 
@@ -36,8 +36,8 @@ function AppContent() {
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-                <AnimatePresence mode="wait">
-          {/* @ts-ignore - Routes component does not explicitly define key prop but it is needed for AnimatePresence */}
+        <AnimatePresence mode="wait">
+          {/* @ts-ignore - Routes component does not explicitly define key prop, but it is needed for AnimatePresence */}
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Home /></PageTransition>} />
             <Route path="/login" element={<PageTransition><Login /></PageTransition>} />

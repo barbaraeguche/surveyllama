@@ -10,10 +10,10 @@ interface SurveyQuestionInput {
   [key: string]: unknown;
 }
 
-/** 
- * Strips all HTML tags from a string to prevent stored XSS.
- * @param value - The string to sanitize.
- * @returns A sanitized string with HTML tags removed.
+/**
+ * strips all HTML tags from a string to prevent stored XSS.
+ * @param value - the string to sanitize.
+ * @returns a sanitized string with HTML tags removed.
  */
 function stripHtml(value: unknown): string {
   if (typeof value !== 'string') return '';
@@ -21,9 +21,9 @@ function stripHtml(value: unknown): string {
 }
 
 /**
- * Sanitizes an array of options by stripping HTML tags and removing empty strings.
- * @param options - The array of options to sanitize.
- * @returns A sanitized array of options.
+ * sanitizes an array of options by stripping HTML tags and removing empty strings.
+ * @param options - the array of options to sanitize.
+ * @returns a sanitized array of options.
  */
 function sanitizeOptions(options: unknown): string[] {
   if (!Array.isArray(options)) return [];
@@ -31,9 +31,9 @@ function sanitizeOptions(options: unknown): string[] {
 }
 
 /**
- * Fetches all surveys created by the authenticated user.
- * @param req - AuthRequest containing user info.
- * @param res - Express Response object.
+ * fetches all surveys created by the authenticated user.
+ * @param req - authRequest containing user info.
+ * @param res - express Response object.
  */
 export const getSurveys = async (req: AuthRequest, res: Response) => {
   if (!req.user || !req.user.uid) {
@@ -62,9 +62,9 @@ export const getSurveys = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Creates a new survey with associated questions.
- * @param req - AuthRequest containing survey details in body.
- * @param res - Express Response object.
+ * creates a new survey with associated questions.
+ * @param req - authRequest containing survey details in body.
+ * @param res - express Response object.
  */
 export const createSurvey = async (req: AuthRequest, res: Response) => {
 
@@ -90,10 +90,10 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
 
     const questionsBatch = db.batch();
     (questions as SurveyQuestionInput[]).forEach((q, index: number) => {
-      // Use the provided question ID if it exists, otherwise generate a new one
+      // use the provided question ID if it exists, otherwise generate a new one
       const qId = q.id || db.collection('surveys').doc(surveyId).collection('questions').doc().id;
       const qRef = db.collection('surveys').doc(surveyId).collection('questions').doc(qId);
-      // Remove id from the data to avoid redundancy and potential overwrite issues
+      // remove id from the data to avoid redundancy and potential overwrite issues
       const { id, ...qData } = q;
       questionsBatch.set(qRef, {
         ...qData,
@@ -112,9 +112,9 @@ export const createSurvey = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Fetches a single survey by ID, including its questions.
- * @param req - Express Request object with survey ID in params.
- * @param res - Express Response object.
+ * fetches a single survey by ID, including its questions.
+ * @param req - express Request object with survey ID in params.
+ * @param res - express Response object.
  */
 export const getSurveyById = async (req: AuthRequest, res: Response) => {
   try {
@@ -132,9 +132,9 @@ export const getSurveyById = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Publishes a survey, making it available for responses.
- * @param req - AuthRequest with survey ID in params.
- * @param res - Express Response object.
+ * publishes a survey, making it available for responses.
+ * @param req - authRequest with survey ID in params.
+ * @param res - express Response object.
  */
 export const publishSurvey = async (req: AuthRequest, res: Response) => {
   try {
@@ -168,10 +168,10 @@ export const publishSurvey = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Unpublishes a survey, preventing new responses.
- * Cannot unpublish if responses already exist.
- * @param req - AuthRequest with survey ID in params.
- * @param res - Express Response object.
+ * unpublishes a survey, preventing new responses.
+ * cannot unpublish if responses already exist.
+ * @param req - authRequest with survey ID in params.
+ * @param res - express Response object.
  */
 export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
   try {
@@ -188,7 +188,7 @@ export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Check for responses
+    // check for responses
     const responsesSnapshot = await surveyRef.collection('responses').limit(1).get();
     if (!responsesSnapshot.empty) {
       return res.status(400).json({ error: 'Cannot unpublish a survey that already has responses.' });
@@ -202,10 +202,10 @@ export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Updates an existing survey's metadata and questions.
- * Only allowed if the survey is not published.
- * @param req - AuthRequest with survey ID in params and update data in body.
- * @param res - Express Response object.
+ * updates an existing survey's metadata and questions.
+ * only allowed if the survey is not published.
+ * @param req - authRequest with survey ID in params and update data in body.
+ * @param res - express Response object.
  */
 export const updateSurvey = async (req: AuthRequest, res: Response) => {
   const { title, description, expiry_date, questions, settings } = req.body;
@@ -229,7 +229,7 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Cannot edit a published survey. Please unpublish it first.' });
     }
 
-    // Update survey metadata
+    // update survey metadata
     await surveyRef.update({
       title: stripHtml(title),
       description: stripHtml(description),
@@ -238,23 +238,23 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
       updated_at: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Update questions
+    // update questions
     if (questions && Array.isArray(questions)) {
       const questionsSnapshot = await surveyRef.collection('questions').get();
       const batch = db.batch();
 
-      // Delete existing questions
+      // delete existing questions
       questionsSnapshot.docs.forEach(doc => {
         batch.delete(doc.ref);
       });
 
-      // Add new questions
+      // add new questions
       (questions as SurveyQuestionInput[]).forEach((q, index: number) => {
-        // Use the provided question ID if it exists, otherwise generate one
+        // use the provided question ID if it exists, otherwise generate one
         const qId = q.id || surveyRef.collection('questions').doc().id;
         const qRef = surveyRef.collection('questions').doc(qId);
 
-        // Remove id from the data to avoid redundancy and potential overwrites
+        // remove id from the data to avoid redundancy and potential overwrites
         const { id: _, ...qData } = q;
 
         batch.set(qRef, {
@@ -277,9 +277,9 @@ export const updateSurvey = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Deletes a survey and all its associated data.
- * @param req - AuthRequest with survey ID in params.
- * @param res - Express Response object.
+ * deletes a survey and all its associated data.
+ * @param req - authRequest with survey ID in params.
+ * @param res - express Response object.
  */
 export const deleteSurvey = async (req: AuthRequest, res: Response) => {
   try {
