@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button, Card } from '../components/UI';
-import { Plus, BarChart3, ExternalLink, Trash2, Send, AlertCircle, Edit, PowerOff, Mail } from 'lucide-react';
-import { Survey } from '../types';
-import { surveyService } from '../services/surveyService';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Button, Card } from "../components/UI";
+import {
+  Plus,
+  BarChart3,
+  ExternalLink,
+  Trash2,
+  Send,
+  AlertCircle,
+  Edit,
+  PowerOff,
+  Mail,
+} from "lucide-react";
+import { Survey } from "../types";
+import { surveyService } from "../services/surveyService";
+import { useAuth } from "../contexts/AuthContext";
+import { motion } from "motion/react";
+import { LoadingSpinner } from "../components/LoadingState";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -20,7 +32,7 @@ export default function Dashboard() {
     setLoading(true);
     setError(null);
     const { data, error } = await surveyService.getAll();
-    
+
     if (error) {
       setError(error);
     } else if (data) {
@@ -30,19 +42,19 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this survey?')) return;
+    if (!confirm("Are you sure you want to delete this survey?")) return;
     const { error } = await surveyService.delete(id);
-    
+
     if (error) {
       alert(error);
     } else {
-      setSurveys(surveys.filter(s => s.id !== id));
+      setSurveys(surveys.filter((s) => s.id !== id));
     }
   };
 
   const handlePublish = async (id: string) => {
     const { error } = await surveyService.publish(id);
-    
+
     if (error) {
       alert(error);
     } else {
@@ -52,7 +64,7 @@ export default function Dashboard() {
 
   const handleUnpublish = async (id: string) => {
     const { error } = await surveyService.unpublish(id);
-    
+
     if (error) {
       alert(error);
     } else {
@@ -60,15 +72,18 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) return <div className="text-center py-20">Loading surveys...</div>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-neutral-900">
-          Welcome back, {user?.displayName || user?.email?.split('@')[0] || 'Admin'}!
+          Welcome back,{" "}
+          {user?.displayName || user?.email?.split("@")[0] || "Admin"}!
         </h1>
-        <p className="text-neutral-500 mt-1">Manage your surveys and view analytics.</p>
+        <p className="text-neutral-500 mt-1">
+          Manage your surveys and view analytics.
+        </p>
       </div>
 
       <div className="flex justify-between items-center mb-8">
@@ -87,13 +102,20 @@ export default function Dashboard() {
         <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
           <AlertCircle size={20} />
           <p>{error}</p>
-          <button onClick={fetchSurveys} className="ml-auto underline font-medium">Retry</button>
+          <button
+            onClick={fetchSurveys}
+            className="ml-auto underline font-medium"
+          >
+            Retry
+          </button>
         </div>
       )}
 
       {surveys.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-neutral-500 mb-4">You haven't created any surveys yet.</p>
+          <p className="text-neutral-500 mb-4">
+            You haven't created any surveys yet.
+          </p>
           <Link to="/create">
             <Button variant="outline">Create your first survey</Button>
           </Link>
@@ -103,16 +125,22 @@ export default function Dashboard() {
           {surveys.map((survey) => (
             <Card key={survey.id} className="p-6 flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold line-clamp-1">{survey.title}</h3>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  survey.is_published ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {survey.is_published ? 'Published' : 'Draft'}
+                <h3 className="text-xl font-bold line-clamp-1">
+                  {survey.title}
+                </h3>
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${
+                    survey.is_published
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {survey.is_published ? "Published" : "Draft"}
                 </span>
               </div>
-              
+
               <p className="text-neutral-600 text-sm mb-6 line-clamp-2 grow">
-                {survey.description || 'No description provided.'}
+                {survey.description || "No description provided."}
               </p>
 
               <div className="flex flex-wrap gap-2 mt-auto">
@@ -129,16 +157,20 @@ export default function Dashboard() {
                     Stats
                   </Button>
                 </Link>
-                
+
                 {survey.is_published ? (
                   <>
-                    <Link to={`/survey/${survey.id}`} target="_blank" className="flex-1">
+                    <Link
+                      to={`/survey/${survey.id}`}
+                      target="_blank"
+                      className="flex-1"
+                    >
                       <Button className="w-full flex gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
                         <ExternalLink size={16} />
                         View
                       </Button>
                     </Link>
-                    <Button 
+                    <Button
                       onClick={() => handleUnpublish(survey.id)}
                       className="flex-1 flex gap-1 bg-orange-50 text-orange-600 hover:bg-orange-100"
                       title="Unpublish to edit"
@@ -155,7 +187,7 @@ export default function Dashboard() {
                         Edit
                       </Button>
                     </Link>
-                    <Button 
+                    <Button
                       onClick={() => handlePublish(survey.id)}
                       className="flex-1 flex gap-1 bg-green-600 hover:bg-green-700"
                     >
@@ -165,7 +197,7 @@ export default function Dashboard() {
                   </>
                 )}
 
-                <Button 
+                <Button
                   onClick={() => handleDelete(survey.id)}
                   className="bg-red-50 text-red-600 hover:bg-red-100 px-3"
                 >

@@ -13,6 +13,8 @@ import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard
 import ResponseTrendsCard from "../components/analytics/ResponseTrendsCard";
 import { surveyService } from "../services/surveyService";
 import { AnalyticsDateRange, AnalyticsTrend, SurveyAnalytics } from "../types";
+import { motion, AnimatePresence } from "motion/react";
+import { LoadingSpinner } from "../components/LoadingState";
 
 function getStartDate(
   dateRange: AnalyticsDateRange,
@@ -127,17 +129,75 @@ export default function Analytics() {
     return filterTrends(analytics.trends, dateRange, customStart, customEnd);
   }, [analytics?.trends, customEnd, customStart, dateRange]);
 
-  const recentActivityCount =
-    analytics?.trends.length && analytics.trends.length > 0
-      ? analytics.trends[analytics.trends.length - 1].count
-      : 0;
+  // --- StatCard metrics ---
+  // Completion Rate: % of responses that answered all required questions
+  let completionRate = "N/A";
+  let avgAnswers = "N/A";
+  let mostActiveDay = "N/A";
 
-  if (loading)
-    return (
-      <div className="text-center py-20 animate-pulse text-neutral-400">
-        Loading analytics...
-      </div>
-    );
+  if (analytics) {
+    const requiredQuestions = analytics.questions.filter((q) => q.required);
+    const totalResponses = analytics.totalResponses;
+    // For each response, count how many required questions are answered
+    // Assume: analytics.questions[0].data.length === totalResponses
+    // Build a map: responseIndex -> count of required questions answered
+    const responseCount = totalResponses;
+    if (responseCount > 0 && requiredQuestions.length > 0) {
+      // For each response index, check if all required questions have a value
+      let completeCount = 0;
+      for (let i = 0; i < responseCount; i++) {
+        let allAnswered = true;
+        for (const q of requiredQuestions) {
+          const ans = q.data[i];
+          if (
+            ans === undefined ||
+            ans === null ||
+            (typeof ans === "string" && ans.trim() === "") ||
+            (Array.isArray(ans) && ans.length === 0)
+          ) {
+            allAnswered = false;
+            break;
+          }
+        }
+        if (allAnswered) completeCount++;
+      }
+      completionRate = `${Math.round((completeCount / responseCount) * 100)}%`;
+    } else if (responseCount > 0) {
+      completionRate = "100%";
+    }
+
+    // Average answers per respondent
+    if (responseCount > 0) {
+      let totalAnswers = 0;
+      for (let i = 0; i < responseCount; i++) {
+        let answersForThisResponse = 0;
+        for (const q of analytics.questions) {
+          const val = q.data[i];
+          if (
+            val !== undefined &&
+            val !== null &&
+            ((typeof val === "string" && val.trim() !== "") ||
+              typeof val === "number" ||
+              (Array.isArray(val) && val.length > 0))
+          ) {
+            answersForThisResponse++;
+          }
+        }
+        totalAnswers += answersForThisResponse;
+      }
+      avgAnswers = (totalAnswers / responseCount).toFixed(1);
+    }
+
+    // Most active day
+    if (analytics.trends && analytics.trends.length > 0) {
+      const max = analytics.trends.reduce((a, b) =>
+        a.count > b.count ? a : b,
+      );
+      mostActiveDay = `${max.date} (${max.count})`;
+    }
+  }
+
+  if (loading) return <LoadingSpinner />;
 
   if (error) {
     return <div className="text-center py-20 text-red-500">{error}</div>;
@@ -171,26 +231,60 @@ export default function Analytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StatCard
-          label="Completion Rate"
-          value="92%"
-          icon={<CheckSquare className="text-emerald-500" />}
-          sub="Estimated based on views"
-        />
-        <StatCard
-          label="Avg. Completion Time"
-          value="4m 12s"
-          icon={<Calendar className="text-amber-500" />}
-          sub="Stable over last 7 days"
-        />
-        <StatCard
-          label="Recent Activity"
-          value={recentActivityCount > 0 ? `+${recentActivityCount}` : "0"}
-          icon={<MessageSquare className="text-indigo-500" />}
-          sub="Responses today"
-        />
-      </div>
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1,
+            },
+          },
+        }}
+      >
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+        >
+          <StatCard
+            label="Completion Rate"
+            value={completionRate}
+            icon={<CheckSquare className="text-emerald-500" />}
+            sub="% of responses answering all required questions"
+          />
+        </motion.div>
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+        >
+          <StatCard
+            label="Avg. Answers/Respondent"
+            value={avgAnswers}
+            icon={<Users className="text-amber-500" />}
+            sub="Average number of questions answered"
+          />
+        </motion.div>
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+        >
+          <StatCard
+            label="Most Active Day"
+            value={mostActiveDay}
+            icon={<Calendar className="text-indigo-500" />}
+            sub="Day with most responses (count)"
+          />
+        </motion.div>
+      </motion.div>
 
       <ResponseTrendsCard
         trends={filteredTrends}

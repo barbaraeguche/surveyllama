@@ -18,6 +18,18 @@ import QuestionTypeActions from "../components/survey-builder/QuestionTypeAction
 
 const DEFAULT_THANK_YOU_MESSAGE = "Thank you for participating in our survey!";
 
+/** Matches unchanged auto-generated option labels such as "Option 1", "Option 12". */
+const PLACEHOLDER_OPTION_PATTERN = /^Option \d+$/i;
+
+/** 
+ * Strips all HTML tags from a string to prevent stored XSS.
+ * @param value - The string to sanitize.
+ * @returns A sanitized string with HTML tags removed.
+ */
+function sanitizeText(value: string): string {
+  return value.replace(/<[^>]*>/g, "").trim();
+}
+
 const DEFAULT_SURVEY_SETTINGS: SurveySettings = {
   is_anonymous: false,
   display_order: "sequential",
@@ -90,21 +102,28 @@ function validateSurveyForm(formState: SurveyFormState) {
     return "Please add at least one question.";
   }
 
-  const emptyQuestion = formState.questions.find(
-    (question) => !question.text.trim(),
-  );
-  if (emptyQuestion) {
-    return "Each question needs text before the survey can be saved.";
-  }
+  for (const question of formState.questions) {
+    if (!question.text.trim()) {
+      return "Each question needs text before the survey can be saved.";
+    }
 
-  const invalidOptionsQuestion = formState.questions.find(
-    (question) =>
-      (question.type === "multiple_choice" || question.type === "checkbox") &&
-      question.options.some((option) => !option.trim()),
-  );
+    if (question.type === "multiple_choice" || question.type === "checkbox") {
+      if (question.options.length < 2) {
+        return "Choice-based questions must have at least 2 options.";
+      }
 
-  if (invalidOptionsQuestion) {
-    return "Choice-based questions cannot contain empty options.";
+      if (question.options.some((option) => !option.trim())) {
+        return "Choice-based questions cannot contain empty options.";
+      }
+
+      if (
+        question.options.some((option) =>
+          PLACEHOLDER_OPTION_PATTERN.test(option.trim()),
+        )
+      ) {
+        return 'Please replace default placeholder options (e.g. \"Option 1\") with real answer choices.';
+      }
+    }
   }
 
   if (formState.expiryDate) {
@@ -260,11 +279,18 @@ export default function CreateSurvey() {
     setError(null);
 
     const surveyData: SurveyUpsertPayload = {
-      title: formState.title.trim(),
-      description: formState.description.trim(),
+      title: sanitizeText(formState.title),
+      description: sanitizeText(formState.description),
       expiry_date: formState.expiryDate,
-      questions: formState.questions,
-      settings: formState.settings,
+      questions: formState.questions.map((q) => ({
+        ...q,
+        text: sanitizeText(q.text),
+        options: q.options.map(sanitizeText),
+      })),
+      settings: {
+        ...formState.settings,
+        thank_you_message: sanitizeText(formState.settings.thank_you_message),
+      },
     };
 
     const { error: serviceError } = isEdit
