@@ -13,6 +13,8 @@ import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard
 import ResponseTrendsCard from "../components/analytics/ResponseTrendsCard";
 import { surveyService } from "../services/surveyService";
 import { AnalyticsDateRange, AnalyticsTrend, SurveyAnalytics } from "../types";
+import { motion, AnimatePresence } from "motion/react";
+import { LoadingSpinner } from "../components/LoadingState";
 
 function getStartDate(
   dateRange: AnalyticsDateRange,
@@ -195,12 +197,7 @@ export default function Analytics() {
     }
   }
 
-  if (loading)
-    return (
-      <div className="text-center py-20 animate-pulse text-neutral-400">
-        Loading analytics...
-      </div>
-    );
+  if (loading) return <LoadingSpinner />;
 
   if (error) {
     return <div className="text-center py-20 text-red-500">{error}</div>;
@@ -234,26 +231,60 @@ export default function Analytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StatCard
-          label="Completion Rate"
-          value={completionRate}
-          icon={<CheckSquare className="text-emerald-500" />}
-          sub="% of responses answering all required questions"
-        />
-        <StatCard
-          label="Avg. Answers/Respondent"
-          value={avgAnswers}
-          icon={<Users className="text-amber-500" />}
-          sub="Average number of questions answered"
-        />
-        <StatCard
-          label="Most Active Day"
-          value={mostActiveDay}
-          icon={<Calendar className="text-indigo-500" />}
-          sub="Day with most responses (count)"
-        />
-      </div>
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1,
+            },
+          },
+        }}
+      >
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+        >
+          <StatCard
+            label="Completion Rate"
+            value={completionRate}
+            icon={<CheckSquare className="text-emerald-500" />}
+            sub="% of responses answering all required questions"
+          />
+        </motion.div>
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+        >
+          <StatCard
+            label="Avg. Answers/Respondent"
+            value={avgAnswers}
+            icon={<Users className="text-amber-500" />}
+            sub="Average number of questions answered"
+          />
+        </motion.div>
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            show: { opacity: 1, y: 0 },
+          }}
+        >
+          <StatCard
+            label="Most Active Day"
+            value={mostActiveDay}
+            icon={<Calendar className="text-indigo-500" />}
+            sub="Day with most responses (count)"
+          />
+        </motion.div>
+      </motion.div>
 
       <ResponseTrendsCard
         trends={filteredTrends}

@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Button, Input, Card } from "../components/UI";
 import { Survey, Question } from "../types";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { surveyService } from "../services/surveyService";
+import { LoadingSpinner } from '../components/LoadingState';
+
 
 type AnswerValue = string | number | string[];
 
@@ -122,12 +124,7 @@ export default function SurveyView() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="text-center py-20 animate-pulse text-neutral-400">
-        Loading survey...
-      </div>
-    );
+  if (loading) return <LoadingSpinner />;
 
   if (error) {
     return (

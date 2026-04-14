@@ -11,6 +11,9 @@ import Navbar from './components/Navbar';
 
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AnimatePresence } from 'motion/react';
+import { PageTransition, LoadingSpinner } from './components/LoadingState';
+import { useLocation } from 'react-router-dom';
 
 function AppContent() {
   /**
@@ -18,10 +21,11 @@ function AppContent() {
    * This ensures that only authenticated users can access certain routes like the dashboard, survey creation, editing, analytics, and invitation sending pages.
    */
   const { token, loading } = useAuth();
+  const location = useLocation();
 
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     // If the authentication state is still loading, show a loading message
-    if (loading) return <div className="text-center py-20">Loading...</div>;
+    if (loading) return <LoadingSpinner />;
     // If no token is found, redirect to the login page
     if (!token) return <Navigate to="/login" replace />;
     // If a token is found, render the child components
@@ -32,37 +36,40 @@ function AppContent() {
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/survey/:id" element={<SurveyView />} />
-          
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/create" element={
-            <ProtectedRoute>
-              <CreateSurvey />
-            </ProtectedRoute>
-          } />
-          <Route path="/edit/:id" element={
-            <ProtectedRoute>
-              <CreateSurvey />
-            </ProtectedRoute>
-          } />
-          <Route path="/analytics/:id" element={
-            <ProtectedRoute>
-              <Analytics />
-            </ProtectedRoute>
-          } />
-          <Route path="/invite/:id" element={
-            <ProtectedRoute>
-              <SendInvitations />
-            </ProtectedRoute>
-          } />
-        </Routes>
+                <AnimatePresence mode="wait">
+          {/* @ts-ignore - Routes component does not explicitly define key prop but it is needed for AnimatePresence */}
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+            <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+            <Route path="/survey/:id" element={<PageTransition><SurveyView /></PageTransition>} />
+            
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <PageTransition><Dashboard /></PageTransition>
+              </ProtectedRoute>
+            } />
+            <Route path="/create" element={
+              <ProtectedRoute>
+                <PageTransition><CreateSurvey /></PageTransition>
+              </ProtectedRoute>
+            } />
+            <Route path="/edit/:id" element={
+              <ProtectedRoute>
+                <PageTransition><CreateSurvey /></PageTransition>
+              </ProtectedRoute>
+            } />
+            <Route path="/analytics/:id" element={
+              <ProtectedRoute>
+                <PageTransition><Analytics /></PageTransition>
+              </ProtectedRoute>
+            } />
+            <Route path="/invite/:id" element={
+              <ProtectedRoute>
+                <PageTransition><SendInvitations /></PageTransition>
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </AnimatePresence>
       </main>
     </div>
   );
