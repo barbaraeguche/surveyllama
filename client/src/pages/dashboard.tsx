@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card } from "../components/UI";
+import { Button, Card } from "../components/ui";
 import {
   Plus,
   BarChart3,
@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 import { Survey } from "../types";
 import { surveyService } from "../services/surveyService";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/authContext";
 import { motion } from "motion/react";
-import { LoadingSpinner } from "../components/LoadingState";
+import { LoadingSpinner } from "../components/loadingState";
 
 export default function Dashboard() {
   const { user } = useAuth();

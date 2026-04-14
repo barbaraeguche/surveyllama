@@ -1,6 +1,6 @@
 import { GripVertical, Trash2 } from "lucide-react";
 
-import { Card, Button, Input } from "../UI";
+import { Card, Button, Input } from "../ui";
 import { Question } from "../../types";
 
 const RATING_SCALE_VALUES = [1, 2, 3, 4, 5];

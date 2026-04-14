@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Button, Card, Input } from '../components/UI';
+import { Button, Card, Input } from '../components/ui';
 import { Upload, Mail, CheckCircle, AlertCircle, ArrowLeft, X, Paperclip, FileText, Loader2, Plus } from 'lucide-react';
 import { motion } from 'motion/react';
 import { storage } from '../lib/firebase';

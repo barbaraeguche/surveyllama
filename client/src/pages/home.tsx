@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "../components/UI";
-import FeatureCard from "../components/FeatureCard";
+import { Button } from "../components/ui";
+import FeatureCard from "../components/featureCard";
 import {
   ClipboardList,
   BarChart3,
@@ -10,7 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/authContext";
 
 export default function Home() {
   const { user, token } = useAuth();

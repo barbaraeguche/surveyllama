@@ -7,7 +7,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/authContext";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils.ts";
 

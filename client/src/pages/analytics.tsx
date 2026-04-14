@@ -8,13 +8,13 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-import StatCard from "../components/StatCard";
-import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard";
-import ResponseTrendsCard from "../components/analytics/ResponseTrendsCard";
+import StatCard from "../components/statCard";
+import AnalyticsQuestionCard from "../components/analytics/analyticsQuestionCard";
+import ResponseTrendsCard from "../components/analytics/responseTrendsCard";
 import { surveyService } from "../services/surveyService";
 import { AnalyticsDateRange, AnalyticsTrend, SurveyAnalytics } from "../types";
 import { motion, AnimatePresence } from "motion/react";
-import { LoadingSpinner } from "../components/LoadingState";
+import { LoadingSpinner } from "../components/loadingState";
 
 function getStartDate(
   dateRange: AnalyticsDateRange,

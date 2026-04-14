@@ -1,4 +1,4 @@
-import { Card } from "../UI";
+import { Card } from "../ui";
 import { QuestionDisplayOrder, SurveySettings } from "../../types";
 
 type SurveySettingsCardProps = {

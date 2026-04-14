@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { Button, Input, Card } from "../components/UI";
+import { Button, Input, Card } from "../components/ui";
 import { Survey, Question } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { surveyService } from "../services/surveyService";
-import { LoadingSpinner } from '../components/LoadingState';
+import { LoadingSpinner } from '../components/loadingState';
 
 
 type AnswerValue = string | number | string[];

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import CreateSurvey from './pages/CreateSurvey';
-import SurveyView from './pages/SurveyView';
-import Analytics from './pages/Analytics';
-import SendInvitations from './pages/SendInvitations';
-import Navbar from './components/Navbar';
+import Home from './pages/home';
+import Login from './pages/login';
+import Dashboard from './pages/dashboard';
+import CreateSurvey from './pages/createSurvey';
+import SurveyView from './pages/surveyView';
+import Analytics from './pages/analytics';
+import SendInvitations from './pages/sendInvitations';
+import Navbar from './components/navbar';
 
 
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/authContext';
 import { AnimatePresence } from 'motion/react';
-import { PageTransition, LoadingSpinner } from './components/LoadingState';
+import { PageTransition, LoadingSpinner } from './components/loadingState';
 import { useLocation } from 'react-router-dom';
 
 function AppContent() {

@@ -1,11 +1,8 @@
-# SurveyLlama 🦙
+## surveyllama 🦙
+a cloud-based web application for creating, distributing, and analyzing online surveys. this was built as a requirement project for soen 487.
 
-A cloud-based web application for creating, distributing, and analyzing online surveys. this was built as a requirement project for soen 487.
-
-## Features
-
-### Admin
-
+### features
+#### admin
 - create surveys with a title, description, and expiry date
 - add four question types: multiple choice, short answer, checkbox, and rating scale
 - reorder questions via drag-and-drop
@@ -14,37 +11,32 @@ A cloud-based web application for creating, distributing, and analyzing online s
 - send personalized email invitations with secure, single-use links
 - view analytics: response counts and charts per question
 
-### Participant
-
+#### participant
 - access surveys exclusively via a secure invitation link (token-based)
 - submit responses anonymously or with email
 - cannot submit on expired or unpublished surveys
 - each invitation link can only be used once
 
-### Architecture
-
+### architecture
 three-tier web architecture:
-
 ```
 presentation layer  →  react + react router + tailwind css
 application layer   →  node.js + express.js rest api
 cloud/data layer    →  firebase firestore + firebase auth + firebase app hosting
 ```
 
-### Tech Stack
-
+### tech stack
 | layer          | technology                                                        |
 |----------------|-------------------------------------------------------------------|
 | frontend       | react 19, react router 7, tailwind css 4, recharts, framer motion |
 | backend        | node.js, express.js, typescript                                   |
 | database       | firebase firestore                                                |
 | authentication | firebase auth (email/password + google oauth)                     |
-| email          | nodemailer (smtp with gmail / ethereal fallback)                  |
+| email          | nodemailer (smtp / ethereal fallback)                             |
 | hosting        | firebase app hosting                                              |
 | testing        | vitest, testing library                                           |
 
 ### project structure
-
 ```
 surveyllama/
 ├── client/src/
@@ -67,8 +59,7 @@ surveyllama/
 └── apphosting.yaml        # firebase app hosting configuration
 ```
 
-### API endpoints
-
+### api endpoints
 | method   | path                         | auth     | description                               |
 |----------|------------------------------|----------|-------------------------------------------|
 | `GET`    | `/api/surveys`               | required | get all surveys for the current admin     |
@@ -82,8 +73,7 @@ surveyllama/
 | `GET`    | `/api/surveys/:id/analytics` | required | get aggregated analytics                  |
 | `POST`   | `/api/surveys/send-invites`  | required | send email invitations                    |
 
-### Firestore data model
-
+### firestore data model
 ```
 surveys/{surveyId}
   ├── title, description, expiry_date
@@ -101,8 +91,7 @@ surveys/{surveyId}
         ├── email, used, status, sent_at, admin_id
 ```
 
-### Secure survey invitation flow
-
+### secure invitation flow
 1. admin uploads emails and sends invitations
 2. a unique uuid token is generated per recipient
 3. the email contains a link: `/survey/:id?token=<uuid>`
@@ -111,15 +100,12 @@ surveys/{surveyId}
 6. after a successful submission the token is marked `used: true`, preventing resubmission
 
 ### getting started
-
 #### prerequisites
-
-- `node.js >= 22.6.0`
+- node.js >= 22.6.0
 - a firebase project with firestore and authentication enabled
 - smtp credentials for email sending (or use the ethereal fallback for testing)
 
 #### environment variables
-
 create a `.env` file in the project root:
 
 ```env
@@ -145,7 +131,6 @@ SMTP_FROM=your@email.com
 ```
 
 #### run locally
-
 ```bash
 # install dependencies
 npm install
@@ -153,25 +138,20 @@ npm install
 # start the development server (express + vite)
 npm run dev
 ```
-
 the app runs on `http://localhost:3000`.
 
 #### build for production
-
 ```bash
 npm run build
 ```
 
 #### run tests
-
 ```bash
 npm test
 ```
 
 ### deployment
-
 the app is deployed via **firebase app hosting**. configuration is in `apphosting.yaml`.
-
 ```bash
 firebase deploy
 ```
