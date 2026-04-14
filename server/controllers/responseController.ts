@@ -8,10 +8,10 @@ import admin from '../config/firebase.ts';
  * @param res - Express Response object.
  */
 export const submitResponse = async (req: Request, res: Response) => {
-  const { email, answers } = req.body;
+  const { email, answers, token } = req.body;
   const surveyId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-  if (!surveyId || !answers) {
+  if (!surveyId || !answers || !token) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -32,12 +32,27 @@ export const submitResponse = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Survey has expired' });
     }
 
+    // Validate token
+    const invitationRef = surveyRef.collection('invitations').doc(token);
+    const invitationDoc = await invitationRef.get();
+
+    if (!invitationDoc.exists) {
+      return res.status(403).json({ error: 'Invalid invitation link' });
+    }
+
+    if (invitationDoc.data()?.used) {
+      return res.status(403).json({ error: 'This invitation link has already been used' });
+    }
+
     // Add response to subcollection
     await surveyRef.collection('responses').add({
-      email: email || 'anonymous',
+      email: invitationDoc.data()?.email || email || 'anonymous',
       answers,
       submitted_at: admin.firestore.FieldValue.serverTimestamp()
     });
+
+    // Mark token as used
+    await invitationRef.update({ used: true });
 
     res.json({ success: true });
   } catch (error) {

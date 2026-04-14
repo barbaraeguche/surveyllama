@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import type { Response } from 'express';
 import type { AuthRequest } from '../middleware/auth.ts';
 import { db } from '../config/firebase.ts';
@@ -55,12 +56,14 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
 
   try {
     const results = await Promise.all(emails.map(async (email: string) => {
+      const token = randomUUID();
+      const tokenizedUrl = `${surveyUrl}?token=${token}`;
+
       try {
-        // TODO: Create email templates
         await EmailService.sendEmail({
           to: email,
           subject: `Invitation: ${surveyData.title}`,
-          text: `Hello,\n\nYou have been invited to participate in the survey: "${surveyData.title}".\n\nDescription: ${surveyData.description || 'No description provided.'}\n\nPlease click the link below to start:\n\n${surveyUrl}\n\nThank you!`,
+          text: `Hello,\n\nYou have been invited to participate in the survey: "${surveyData.title}".\n\nDescription: ${surveyData.description || 'No description provided.'}\n\nPlease click the link below to start:\n\n${tokenizedUrl}\n\nThank you!`,
           html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
               <h2 style="color: #4f46e5; margin-top: 0;">You're Invited!</h2>
@@ -68,10 +71,10 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
               <p style="font-size: 16px; color: #374151;">You have been invited to participate in the survey: <strong>"${surveyData.title}"</strong> on <strong>SurveyLlama</strong>.</p>
               ${surveyData.description ? `<p style="font-size: 14px; color: #6b7280; font-style: italic;">"${surveyData.description}"</p>` : ''}
               <div style="margin: 30px 0;">
-                <a href="${surveyUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Start Survey</a>
+                <a href="${tokenizedUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Start Survey</a>
               </div>
               <p style="color: #6b7280; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="color: #6b7280; font-size: 14px; word-break: break-all;">${surveyUrl}</p>
+              <p style="color: #6b7280; font-size: 14px; word-break: break-all;">${tokenizedUrl}</p>
               <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
               <p style="color: #9ca3af; font-size: 12px;">This is an automated message from SurveyLlama.</p>
             </div>
@@ -84,9 +87,10 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
             : []
         });
 
-        // Log invitation to Firestore
-        await db.collection('surveys').doc(surveyId).collection('invitations').add({
+        // Store token as doc ID for O(1) lookup on submission
+        await db.collection('surveys').doc(surveyId).collection('invitations').doc(token).set({
           email,
+          used: false,
           sent_at: admin.firestore.FieldValue.serverTimestamp(),
           status: 'sent',
           admin_id: req.user?.uid
@@ -96,9 +100,9 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
       } catch (err) {
         console.error(`Failed to send email to ${email}:`, err);
 
-        // Log failed invitation
-        await db.collection('surveys').doc(surveyId).collection('invitations').add({
+        await db.collection('surveys').doc(surveyId).collection('invitations').doc(token).set({
           email,
+          used: false,
           sent_at: admin.firestore.FieldValue.serverTimestamp(),
           status: 'failed',
           error: err instanceof Error ? err.message : String(err),
