@@ -98,13 +98,15 @@ export default function QuestionEditorCard({
               </div>
             ))}
 
-            <Button
-              type="button"
-              onClick={() => onAddOption(question.id)}
-              className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 text-xs py-1 h-auto"
-            >
-              + Add Option
-            </Button>
+            {question.options.length < 10 && (
+              <Button
+                type="button"
+                onClick={() => onAddOption(question.id)}
+                className="bg-neutral-100 text-neutral-600 hover:bg-neutral-200 text-xs py-1 h-auto"
+              >
+                + Add Option
+              </Button>
+            )}
           </div>
         )}
 

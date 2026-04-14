@@ -151,6 +151,15 @@ export const publishSurvey = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
+    const expiryDate = surveyDoc.data()?.expiry_date;
+    if (expiryDate) {
+      const minExpiry = new Date();
+      minExpiry.setDate(minExpiry.getDate() + 7);
+      if (new Date(expiryDate) < minExpiry) {
+        return res.status(400).json({ error: 'Expiry date must be at least one week from today.' });
+      }
+    }
+
     await surveyRef.update({ is_published: true });
     res.json({ success: true });
   } catch (error) {

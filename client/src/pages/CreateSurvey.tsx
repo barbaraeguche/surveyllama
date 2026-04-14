@@ -126,6 +126,14 @@ function validateSurveyForm(formState: SurveyFormState) {
     }
   }
 
+  if (formState.expiryDate) {
+    const minExpiry = new Date();
+    minExpiry.setDate(minExpiry.getDate() + 7);
+    if (new Date(formState.expiryDate) < minExpiry) {
+      return "Expiry date must be at least one week from today.";
+    }
+  }
+
   return null;
 }
 

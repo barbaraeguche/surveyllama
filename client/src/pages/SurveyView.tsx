@@ -144,10 +144,20 @@ export default function SurveyView() {
 
   if (!survey)
     return <div className="text-center py-20">Survey not found.</div>;
+
+  if (!token)
+    return (
+      <div className="text-center py-20">Invalid invitation link. Please use the link from your email.</div>
+    );
+
   if (!survey.is_published)
     return (
       <div className="text-center py-20">This survey is not yet published.</div>
     );
+
+  if (survey.expiry_date && new Date(survey.expiry_date) < new Date()) {
+    return <div className="text-center py-20">This survey has expired and is no longer accepting responses.</div>
+  }
 
   if (submitted) {
     return (
