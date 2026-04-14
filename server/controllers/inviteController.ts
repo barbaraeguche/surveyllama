@@ -4,6 +4,7 @@ import type { AuthRequest } from '../middleware/auth.ts';
 import { db } from '../config/firebase.ts';
 import admin from '../config/firebase.ts';
 import { EmailService } from '../services/emailService.ts';
+import { EmailTemplateService } from '../services/emailTemplateService.ts';
 
 interface SurveyInviteData {
   admin_id: string;
@@ -19,7 +20,7 @@ interface InviteAttachmentInput {
 
 /**
  * Controller for sending survey invitations to a list of emails.
- * @param req - AuthRequest containing surveyId, emails, surveyUrl, and optional attachments.
+ * @param req - AuthRequest containing surveyId, emails, and optional attachments.
  * @param res - Express Response object.
  */
 export const sendInvitations = async (req: AuthRequest, res: Response) => {
@@ -58,27 +59,14 @@ export const sendInvitations = async (req: AuthRequest, res: Response) => {
     const results = await Promise.all(emails.map(async (email: string) => {
       const token = randomUUID();
       const tokenizedUrl = `${surveyUrl}?token=${token}`;
+      const { html, text } = EmailTemplateService.getSurveyInvitationTemplate(surveyData.title, surveyData.description, tokenizedUrl);
 
       try {
         await EmailService.sendEmail({
           to: email,
           subject: `Invitation: ${surveyData.title}`,
-          text: `Hello,\n\nYou have been invited to participate in the survey: "${surveyData.title}".\n\nDescription: ${surveyData.description || 'No description provided.'}\n\nPlease click the link below to start:\n\n${tokenizedUrl}\n\nThank you!`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
-              <h2 style="color: #4f46e5; margin-top: 0;">You're Invited!</h2>
-              <p style="font-size: 16px; color: #374151;">Hello,</p>
-              <p style="font-size: 16px; color: #374151;">You have been invited to participate in the survey: <strong>"${surveyData.title}"</strong> on <strong>SurveyLlama</strong>.</p>
-              ${surveyData.description ? `<p style="font-size: 14px; color: #6b7280; font-style: italic;">"${surveyData.description}"</p>` : ''}
-              <div style="margin: 30px 0;">
-                <a href="${tokenizedUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Start Survey</a>
-              </div>
-              <p style="color: #6b7280; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="color: #6b7280; font-size: 14px; word-break: break-all;">${tokenizedUrl}</p>
-              <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-              <p style="color: #9ca3af; font-size: 12px;">This is an automated message from SurveyLlama.</p>
-            </div>
-          `,
+          text,
+          html,
           attachments: attachments && Array.isArray(attachments)
             ? (attachments as InviteAttachmentInput[]).map((att) => ({
               filename: att.filename,
