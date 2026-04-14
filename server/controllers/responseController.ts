@@ -27,6 +27,11 @@ export const submitResponse = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Survey is not published' });
     }
 
+    const expiryDate = surveyDoc.data()?.expiry_date;
+    if (expiryDate && new Date(expiryDate) < new Date()) {
+      return res.status(400).json({ error: 'Survey has expired' });
+    }
+
     // Add response to subcollection
     await surveyRef.collection('responses').add({
       email: email || 'anonymous',
