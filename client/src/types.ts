@@ -28,6 +28,8 @@ export interface Question {
 export interface Survey {
   /** Unique identifier for the survey. */
   id: string;
+  /** UID of the survey owner. */
+  admin_id?: string;
   /** The title of the survey. */
   title: string;
   /** A brief description of the survey's purpose. */
