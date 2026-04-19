@@ -1,17 +1,17 @@
 import { Router } from 'express';
-import { 
-  getSurveys, 
-  createSurvey, 
-  getSurveyById, 
-  publishSurvey, 
+import {
+  getSurveys,
+  createSurvey,
+  getSurveyById,
+  publishSurvey,
   unpublishSurvey,
   updateSurvey,
-  deleteSurvey 
+  deleteSurvey
 } from '../controllers/surveyController.ts';
 import { submitResponse } from '../controllers/responseController.ts';
 import { getAnalytics } from '../controllers/analyticsController.ts';
 import { sendInvitations } from '../controllers/inviteController.ts';
-import { authenticateToken } from '../middleware/auth.ts';
+import { authenticateToken, optionalAuthenticateToken } from '../middleware/auth.ts';
 
 /**
  * Survey routes for managing surveys, responses, analytics, and invitations.
@@ -66,7 +66,7 @@ router.get('/:id/analytics', authenticateToken, getAnalytics);
  * @desc Get a single survey by ID.
  * @access Public
  */
-router.get('/:id', getSurveyById);
+router.get('/:id', optionalAuthenticateToken, getSurveyById);
 
 /**
  * @route PATCH /api/surveys/:id/publish
