@@ -25,6 +25,7 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const method = options.method || 'GET';
+  const token = localStorage.getItem('token');
   logger.debug(`API Request: ${method} ${url}`, options.body);
 
   try {
@@ -32,7 +33,7 @@ export async function apiRequest<T>(
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     });
