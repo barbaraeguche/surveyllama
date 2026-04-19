@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Button, Input, Card } from "../components/UI";
 import { Survey, Question } from "../types";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { surveyService } from "../services/surveyService";
-import { LoadingSpinner } from '../components/LoadingState';
-
+import { LoadingSpinner } from "../components/LoadingState";
+import { useAuth } from "../contexts/AuthContext";
 
 type AnswerValue = string | number | string[];
 
@@ -50,6 +50,7 @@ function getSelectedOptions(value: AnswerValue | undefined) {
 export default function SurveyView() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
   const token = searchParams.get("token");
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
@@ -76,6 +77,9 @@ export default function SurveyView() {
     return questions;
   }, [survey]);
 
+  const isOwnerPreview = Boolean(user?.uid && survey?.admin_id === user.uid);
+  const canAccessSurvey = Boolean(token || isOwnerPreview);
+
   const fetchSurvey = async () => {
     if (!id) return;
     setLoading(true);
@@ -96,6 +100,13 @@ export default function SurveyView() {
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
+
+    if (isOwnerPreview && !token) {
+      setError(
+        "Preview mode does not allow submitting responses without an invitation link.",
+      );
+      return;
+    }
 
     const missingRequired = survey?.questions?.filter(
       (question) =>
@@ -124,7 +135,7 @@ export default function SurveyView() {
     }
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading || authLoading) return <LoadingSpinner />;
 
   if (error) {
     return (
@@ -142,18 +153,28 @@ export default function SurveyView() {
   if (!survey)
     return <div className="text-center py-20">Survey not found.</div>;
 
-  if (!token)
+  if (!canAccessSurvey)
     return (
-      <div className="text-center py-20">Invalid invitation link. Please use the link from your email.</div>
+      <div className="text-center py-20">
+        Invalid invitation link. Please use the link from your email.
+      </div>
     );
 
-  if (!survey.is_published)
+  if (!survey.is_published && !isOwnerPreview)
     return (
       <div className="text-center py-20">This survey is not yet published.</div>
     );
 
-  if (survey.expiry_date && new Date(survey.expiry_date) < new Date()) {
-    return <div className="text-center py-20">This survey has expired and is no longer accepting responses.</div>
+  if (
+    !isOwnerPreview &&
+    survey.expiry_date &&
+    new Date(survey.expiry_date) < new Date()
+  ) {
+    return (
+      <div className="text-center py-20">
+        This survey has expired and is no longer accepting responses.
+      </div>
+    );
   }
 
   if (submitted) {
@@ -182,6 +203,12 @@ export default function SurveyView() {
         <h1 className="text-4xl font-bold mb-4">{survey.title}</h1>
         {survey.description && (
           <p className="text-neutral-600 text-lg">{survey.description}</p>
+        )}
+        {isOwnerPreview && !token && (
+          <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            Preview mode: you are viewing your own survey without an invitation
+            link, so responses cannot be submitted from this page.
+          </div>
         )}
       </div>
 
@@ -305,9 +332,10 @@ export default function SurveyView() {
 
         <Button
           type="submit"
+          disabled={isSubmitting || (isOwnerPreview && !token)}
           className="w-full py-6 text-xl rounded-xl shadow-lg shadow-indigo-200"
         >
-          Submit Survey
+          {isOwnerPreview && !token ? "Preview Mode" : "Submit Survey"}
         </Button>
       </form>
     </div>
