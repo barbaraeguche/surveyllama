@@ -1,0 +1,31 @@
+rules_version = '2';
+
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Require authentication on all internal operations
+		function isSignedIn() {
+    	return request.auth != null;
+    }
+		// Allow request if caller is authenticated & if Firebase Auth token matches the userId from the Storage path
+		function isPathOwner(userId) {
+    	return isSignedIn() && request.auth.uid == userId;  
+    }
+    // Encode file ownership in path
+    match /attachments/{userId}/{surveyId}/{fileName} {
+    	// Only the signed-in user and owner of the file can read it.
+    	allow read: if isPathOwner(userId);
+      // Only signed-in user can upload a file < 10 MB
+      allow create: if isPathOwner(userId) && request.resource.size < 10 * 1024 * 1024;
+      // Only allow owner of file to delete it.
+      allow delete: if isPathOwner(userId);
+      // Metadata updates or overwrites are blocked entirely
+      allow update: if false;
+    }
+    
+    // Deny access to any other paths inside the bucket.
+    match /{allPaths=**} {
+    	allow read, write: if false;
+    }
+  }
+}

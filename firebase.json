@@ -1,9 +1,12 @@
 {
   "firestore": {
-    "database": "(default)",
+    "database": "surveyllama-db-development",
     "location": "northamerica-northeast1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "firebase.storage.rules"
   },
   "auth": {
     "providers": {
