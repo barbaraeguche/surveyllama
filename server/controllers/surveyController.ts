@@ -10,6 +10,27 @@ interface SurveyQuestionInput {
   [key: string]: unknown;
 }
 
+interface SurveyDocument {
+  admin_id?: string;
+  [key: string]: unknown;
+}
+
+function buildSurveyViewPayload(
+  surveyId: string,
+  surveyData: SurveyDocument,
+  questions: Record<string, unknown>[],
+  viewerUid?: string,
+) {
+  const { admin_id, ...publicSurveyData } = surveyData;
+
+  return {
+    id: surveyId,
+    ...publicSurveyData,
+    questions,
+    viewer_can_preview: Boolean(viewerUid && admin_id === viewerUid),
+  };
+}
+
 /** 
  * Strips all HTML tags from a string to prevent stored XSS.
  * @param value - The string to sanitize.
@@ -122,10 +143,12 @@ export const getSurveyById = async (req: AuthRequest, res: Response) => {
     const surveyDoc = await db.collection('surveys').doc(surveyId).get();
     if (!surveyDoc.exists) return res.status(404).json({ error: 'Survey not found' });
 
+    const surveyData = surveyDoc.data() as SurveyDocument;
+
     const questionsSnapshot = await db.collection('surveys').doc(surveyId).collection('questions').orderBy('order_index', 'asc').get();
     const questions = questionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    res.json({ id: surveyDoc.id, ...surveyDoc.data(), questions });
+    res.json(buildSurveyViewPayload(surveyDoc.id, surveyData, questions, req.user?.uid));
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch survey' });
   }
