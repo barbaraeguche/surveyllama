@@ -2,6 +2,39 @@ import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import type { Request, Response, NextFunction } from 'express';
 
+const { firestoreInstance } = vi.hoisted(() => ({
+  firestoreInstance: {
+    settings: vi.fn(),
+    collection: vi.fn(() => ({
+      where: vi.fn(() => ({
+        orderBy: vi.fn(() => ({
+          get: vi.fn(() => Promise.resolve({ docs: [] })),
+        })),
+        get: vi.fn(() => Promise.resolve({ docs: [] })),
+      })),
+      doc: vi.fn(() => ({
+        get: vi.fn(() => Promise.resolve({ exists: false })),
+        set: vi.fn(() => Promise.resolve()),
+        update: vi.fn(() => Promise.resolve()),
+        delete: vi.fn(() => Promise.resolve()),
+        collection: vi.fn(() => ({
+          orderBy: vi.fn(() => ({
+            get: vi.fn(() => Promise.resolve({ docs: [] })),
+          })),
+          get: vi.fn(() => Promise.resolve({ size: 0, docs: [] })),
+          doc: vi.fn(() => ({
+            set: vi.fn(() => Promise.resolve()),
+          })),
+        })),
+      })),
+    })),
+    batch: vi.fn(() => ({
+      set: vi.fn(),
+      commit: vi.fn(() => Promise.resolve()),
+    })),
+  },
+}));
+
 // Mock firebase-admin before importing app
 vi.mock('firebase-admin', () => ({
   default: {
@@ -10,37 +43,7 @@ vi.mock('firebase-admin', () => ({
     credential: {
       cert: vi.fn(),
     },
-    firestore: Object.assign(vi.fn(() => ({
-      collection: vi.fn(() => ({
-        where: vi.fn(() => ({
-          orderBy: vi.fn(() => ({
-            get: vi.fn(() => Promise.resolve({ docs: [] })),
-          })),
-        })),
-        doc: vi.fn(() => ({
-          get: vi.fn(() => Promise.resolve({ exists: false })),
-          set: vi.fn(() => Promise.resolve()),
-          update: vi.fn(() => Promise.resolve()),
-          delete: vi.fn(() => Promise.resolve()),
-          collection: vi.fn(() => ({
-            orderBy: vi.fn(() => ({
-              get: vi.fn(() => Promise.resolve({ docs: [] })),
-            })),
-            get: vi.fn(() => Promise.resolve({ size: 0, docs: [] })),
-            doc: vi.fn(() => ({
-              set: vi.fn(() => Promise.resolve()),
-            })),
-          })),
-        })),
-      })),
-      batch: vi.fn(() => ({
-        set: vi.fn(),
-        commit: vi.fn(() => Promise.resolve()),
-      })),
-      FieldValue: {
-        serverTimestamp: vi.fn(),
-      },
-    })), {
+    firestore: Object.assign(vi.fn(() => firestoreInstance), {
       FieldValue: {
         serverTimestamp: vi.fn(),
       }
