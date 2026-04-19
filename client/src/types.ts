@@ -30,6 +30,8 @@ export interface Survey {
   id: string;
   /** UID of the survey owner. */
   admin_id?: string;
+  /** Whether the current viewer can preview this survey without an invite token. */
+  viewer_can_preview?: boolean;
   /** The title of the survey. */
   title: string;
   /** A brief description of the survey's purpose. */
