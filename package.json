@@ -8,11 +8,11 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "test": "NODE_ENV=test vitest run",
+    "test": "cross-env NODE_ENV=test vitest run",
     "build": "vite build",
     "start": "node --experimental-strip-types server.ts",
     "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
@@ -50,6 +50,7 @@
     "@types/react": "^19.2.14",
     "@types/supertest": "^6.0.3",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^10.1.0",
     "jsdom": "^28.1.0",
     "supertest": "^7.2.2",
     "tailwindcss": "^4.1.14",
