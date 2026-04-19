@@ -6,7 +6,6 @@ import { motion } from "motion/react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { surveyService } from "../services/surveyService";
 import { LoadingSpinner } from "../components/LoadingState";
-import { useAuth } from "../contexts/AuthContext";
 
 type AnswerValue = string | number | string[];
 
@@ -50,7 +49,6 @@ function getSelectedOptions(value: AnswerValue | undefined) {
 export default function SurveyView() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
   const token = searchParams.get("token");
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
@@ -77,7 +75,7 @@ export default function SurveyView() {
     return questions;
   }, [survey]);
 
-  const isOwnerPreview = Boolean(user?.uid && survey?.admin_id === user.uid);
+  const isOwnerPreview = Boolean(survey?.viewer_can_preview);
   const canAccessSurvey = Boolean(token || isOwnerPreview);
 
   const fetchSurvey = async () => {
@@ -135,7 +133,7 @@ export default function SurveyView() {
     }
   };
 
-  if (loading || authLoading) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner />;
 
   if (error) {
     return (
