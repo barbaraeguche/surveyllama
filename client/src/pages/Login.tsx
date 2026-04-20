@@ -8,6 +8,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
+import { Banner } from '../components/Banner';
+import { AnimatePresence } from 'motion/react';
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Authentication failed";
@@ -84,7 +86,15 @@ export default function Login() {
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <AnimatePresence>
+              {error && (
+                <Banner 
+                  message={error} 
+                  onClose={() => setError('')}
+                  className="mb-4"
+                />
+              )}
+            </AnimatePresence>
 
             <Button type="submit" className="w-full py-6 text-lg">
               {isLogin ? "Login" : "Register"}

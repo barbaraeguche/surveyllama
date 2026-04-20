@@ -1,11 +1,9 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/UI";
 import FeatureCard from "../components/FeatureCard";
 import {
   ClipboardList,
   BarChart3,
-  ShieldCheck,
   Send,
   ArrowRight,
 } from "lucide-react";
@@ -15,13 +13,13 @@ import { useAuth } from "../contexts/AuthContext";
 export default function Home() {
   const { user, token } = useAuth();
   return (
-    <div className="flex flex-col items-center text-center max-w-4xl mx-auto py-12">
+    <div className="flex flex-col items-center text-center max-w-4xl mx-auto py-12 px-4 sm:px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-5xl font-extrabold tracking-tight text-neutral-900 sm:text-6xl mb-6">
+        <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 sm:text-5xl md:text-6xl mb-6">
           {token ? (
             <>
               Welcome back,{" "}
@@ -36,32 +34,32 @@ export default function Home() {
             </>
           )}
         </h1>
-        <p className="text-xl text-neutral-600 mb-10 max-w-2xl mx-auto">
+        <p className="text-base sm:text-xl text-neutral-600 mb-10 max-w-2xl mx-auto">
           {token
             ? "Ready to create your next survey? Check your dashboard for recent activity and insights."
             : "Create professional surveys in minutes, distribute them securely, and analyze results with powerful real-time tools."}
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center w-full sm:w-auto">
           {token ? (
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/dashboard">
-                <Button className="px-8 py-6 text-lg shadow-sm hover:shadow-md transition-shadow rounded-xl flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <Link to="/dashboard" className="w-full sm:w-auto">
+                <Button className="w-full px-8 py-6 text-lg shadow-sm hover:shadow-md transition-shadow rounded-xl flex gap-2">
                   Go to Dashboard
                   <ArrowRight size={20} />
                 </Button>
               </Link>
-              <Link to="/create">
+              <Link to="/create" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
-                  className="px-8 py-6 text-lg rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                  className="w-full px-8 py-6 text-lg rounded-xl shadow-sm hover:shadow-md transition-shadow"
                 >
                   Create New Survey
                 </Button>
               </Link>
             </div>
           ) : (
-            <Link to="/login">
-              <Button className="px-8 py-6 text-lg rounded-xl">
+            <Link to="/login" className="w-full sm:w-auto">
+              <Button className="w-full px-8 py-6 text-lg rounded-xl">
                 Get Started
               </Button>
             </Link>
