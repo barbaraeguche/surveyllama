@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import CreateSurvey from './pages/CreateSurvey';
-import SurveyView from './pages/SurveyView';
-import Analytics from './pages/Analytics';
-import SendInvitations from './pages/SendInvitations';
-import Navbar from './components/Navbar';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import CreateSurvey from "./pages/CreateSurvey";
+import SurveyView from "./pages/SurveyView";
+import Analytics from "./pages/Analytics";
+import SendInvitations from "./pages/SendInvitations";
+import NotFound from "./pages/NotFound";
+import Navbar from "./components/Navbar";
 
-
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { AnimatePresence } from 'motion/react';
-import { PageTransition, LoadingSpinner } from './components/LoadingState';
-import { useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AnimatePresence } from "motion/react";
+import { PageTransition, LoadingSpinner } from "./components/LoadingState";
+import { useLocation } from "react-router-dom";
 
 function AppContent() {
   /**
@@ -36,38 +36,85 @@ function AppContent() {
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
-                <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
           {/* @ts-ignore - Routes component does not explicitly define key prop but it is needed for AnimatePresence */}
           <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-            <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-            <Route path="/survey/:id" element={<PageTransition><SurveyView /></PageTransition>} />
-            
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <PageTransition><Dashboard /></PageTransition>
-              </ProtectedRoute>
-            } />
-            <Route path="/create" element={
-              <ProtectedRoute>
-                <PageTransition><CreateSurvey /></PageTransition>
-              </ProtectedRoute>
-            } />
-            <Route path="/edit/:id" element={
-              <ProtectedRoute>
-                <PageTransition><CreateSurvey /></PageTransition>
-              </ProtectedRoute>
-            } />
-            <Route path="/analytics/:id" element={
-              <ProtectedRoute>
-                <PageTransition><Analytics /></PageTransition>
-              </ProtectedRoute>
-            } />
-            <Route path="/invite/:id" element={
-              <ProtectedRoute>
-                <PageTransition><SendInvitations /></PageTransition>
-              </ProtectedRoute>
-            } />
+            <Route
+              path="/"
+              element={
+                <PageTransition>
+                  <Home />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <PageTransition>
+                  <Login />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/survey/:id"
+              element={
+                <PageTransition>
+                  <SurveyView />
+                </PageTransition>
+              }
+            />
+
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Dashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <CreateSurvey />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <CreateSurvey />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics/:id"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Analytics />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/invite/:id"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <SendInvitations />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
           </Routes>
         </AnimatePresence>
       </main>
