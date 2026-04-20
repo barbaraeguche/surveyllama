@@ -31,7 +31,7 @@ export const Skeleton = ({ className }: { className?: string }) => (
       opacity: [0.5, 0.8, 0.5],
     }}
     transition={{
-      duration: 1.5,
+      duration: 1.2,
       repeat: Infinity,
       ease: "easeInOut",
     }}
