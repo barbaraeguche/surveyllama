@@ -211,12 +211,6 @@ export const unpublishSurvey = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Check for responses
-    const responsesSnapshot = await surveyRef.collection('responses').limit(1).get();
-    if (!responsesSnapshot.empty) {
-      return res.status(400).json({ error: 'Cannot unpublish a survey that already has responses.' });
-    }
-
     await surveyRef.update({ is_published: false });
     res.json({ success: true });
   } catch (error) {
