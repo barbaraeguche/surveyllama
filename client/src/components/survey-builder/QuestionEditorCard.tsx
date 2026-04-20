@@ -40,8 +40,8 @@ export default function QuestionEditorCard({
         <GripVertical size={24} />
       </div>
 
-      <div className="flex justify-between items-start mb-4 ml-6">
-        <div className="grow mr-4">
+      <div className="flex flex-col sm:flex-row gap-2 justify-between items-start mb-4 ml-6">
+        <div className="grow w-full sm:mr-4">
           <Input
             placeholder="Enter your question here..."
             value={question.text}
@@ -53,13 +53,13 @@ export default function QuestionEditorCard({
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-xs font-bold uppercase text-neutral-400 bg-neutral-100 px-2 py-1 rounded">
+          <span className="text-xs font-bold uppercase bg-indigo-100 text-indigo-700 ring-indigo-700/10 px-4 py-1 rounded-full">
             {formatQuestionTypeLabel(question.type)}
           </span>
           <button
             type="button"
             onClick={() => onRemoveQuestion(question.id)}
-            className="text-red-400 hover:text-red-600"
+            className="text-red-400 hover:text-red-600 transition-colors"
           >
             <Trash2 size={20} />
           </button>
@@ -91,7 +91,7 @@ export default function QuestionEditorCard({
                 <button
                   type="button"
                   onClick={() => onRemoveOption(question.id, index)}
-                  className="text-neutral-400 hover:text-red-500"
+                  className="text-neutral-400 hover:text-red-500 transition-colors"
                 >
                   <Trash2 size={16} />
                 </button>

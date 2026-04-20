@@ -3,9 +3,10 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { Button, Input, Card } from "../components/UI";
 import { Survey, Question } from "../types";
 import { motion } from "motion/react";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { surveyService } from "../services/surveyService";
 import { LoadingSpinner } from "../components/LoadingState";
+import { ErrorState } from "../components/ErrorState";
 
 type AnswerValue = string | number | string[];
 
@@ -137,30 +138,41 @@ export default function SurveyView() {
 
   if (error) {
     return (
-      <div className="max-w-md mx-auto mt-20 text-center">
-        <Card className="p-8">
-          <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Error</h2>
-          <p className="text-neutral-600 mb-6">{error}</p>
-          <Button onClick={fetchSurvey}>Try Again</Button>
-        </Card>
-      </div>
+      <ErrorState 
+        title="Survey Error" 
+        message={error} 
+        onRetry={fetchSurvey} 
+        showHome={true}
+      />
     );
   }
 
-  if (!survey)
-    return <div className="text-center py-20">Survey not found.</div>;
-
-  if (!canAccessSurvey)
+  if (!survey) {
     return (
-      <div className="text-center py-20">
-        Invalid invitation link. Please use the link from your email.
-      </div>
+      <ErrorState 
+        title="Not Found" 
+        message="The survey you are looking for does not exist or has been removed." 
+        showHome={true}
+      />
     );
+  }
+
+  if (!canAccessSurvey){
+    return (
+      <ErrorState 
+        title="Invalid Link" 
+        message="Invalid invitation link. Please use the link from your email." 
+        showHome={true}
+      />
+    )};
 
   if (!survey.is_published && !isOwnerPreview)
     return (
-      <div className="text-center py-20">This survey is not yet published.</div>
+      <ErrorState 
+        title="Survey Not Published" 
+        message="This survey is not yet published or has been closed by the administrator." 
+        showHome={true}
+      />
     );
 
   if (
@@ -169,9 +181,11 @@ export default function SurveyView() {
     new Date(survey.expiry_date) < new Date()
   ) {
     return (
-      <div className="text-center py-20">
-        This survey has expired and is no longer accepting responses.
-      </div>
+      <ErrorState 
+        title="Survey Expired" 
+        message="This survey has expired and is no longer accepting responses." 
+        showHome={true}
+      />
     );
   }
 
@@ -196,11 +210,11 @@ export default function SurveyView() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto pb-20">
+    <div className="max-w-2xl mx-auto pb-20 px-4 sm:px-6">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-4">{survey.title}</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">{survey.title}</h1>
         {survey.description && (
-          <p className="text-neutral-600 text-lg">{survey.description}</p>
+          <p className="text-neutral-600 text-base sm:text-lg">{survey.description}</p>
         )}
         {isOwnerPreview && !token && (
           <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
@@ -211,130 +225,166 @@ export default function SurveyView() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {!survey.settings?.is_anonymous && (
-          <Card className="p-6">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Your Email <span className="text-red-500">*</span>
-            </label>
-            <Input
-              type="email"
-              autoComplete="email"
-              placeholder="email@example.com"
-              value={email}
-              required={true}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Card>
-        )}
-
-        {displayQuestions.map((q, idx) => (
-          <Card key={q.id} className="p-6">
-            <div className="flex items-start gap-2 mb-6">
-              <span className="text-neutral-400 font-mono mt-1">
-                {idx + 1}.
-              </span>
-              <h3 className="text-xl font-medium">
-                {q.text}
-                {q.required && <span className="text-red-500 ml-1">*</span>}
-              </h3>
-            </div>
-
-            <div className="space-y-3">
-              {q.type === "multiple_choice" && (
-                <div className="space-y-2">
-                  {q.options.map((opt, i) => (
-                    <label
-                      key={i}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        value={opt}
-                        checked={getSelectedOptions(answers[q.id]).includes(
-                          opt,
-                        )}
-                        onChange={(e) => {
-                          const currentSelection = getSelectedOptions(
-                            answers[q.id],
-                          );
-                          handleAnswerChange(
-                            q.id,
-                            toggleOptionSelection(
-                              currentSelection,
-                              opt,
-                              e.target.checked,
-                            ),
-                          );
-                        }}
-                        className="w-4 h-4 rounded text-indigo-600"
-                      />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {q.type === "checkbox" && (
-                <div className="space-y-2">
-                  {q.options.map((opt, i) => (
-                    <label
-                      key={i}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="radio"
-                        name={`single-select-${q.id}`}
-                        value={opt}
-                        checked={answers[q.id] === opt}
-                        onChange={() => handleAnswerChange(q.id, opt)}
-                        className="w-4 h-4 text-indigo-600"
-                      />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {q.type === "short_answer" && (
-                <textarea
-                  className="w-full rounded-md border border-neutral-200 p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                  rows={3}
-                  placeholder="Type your answer here..."
-                  value={answers[q.id] || ""}
-                  onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                  required={q.required}
-                />
-              )}
-
-              {q.type === "rating" && (
-                <div className="flex justify-between gap-2">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => handleAnswerChange(q.id, n)}
-                      className={`flex-1 py-4 rounded-xl border-2 transition-all font-bold ${
-                        answers[q.id] === n
-                          ? "border-indigo-600 bg-indigo-50 text-indigo-600"
-                          : "border-neutral-100 hover:border-neutral-200 text-neutral-400"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Card>
-        ))}
-
-        <Button
-          type="submit"
-          disabled={isSubmitting || (isOwnerPreview && !token)}
-          className="w-full py-6 text-xl rounded-xl shadow-lg shadow-indigo-200"
+        <motion.div
+          className="space-y-8"
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1,
+              },
+            },
+          }}
         >
-          {isOwnerPreview && !token ? "Preview Mode" : "Submit Survey"}
-        </Button>
+          {!survey.settings?.is_anonymous && (
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+            >
+              <Card className="p-6">
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Your Email <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="email@example.com"
+                  value={email}
+                  required={true}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </Card>
+            </motion.div>
+          )}
+
+          {displayQuestions.map((q, idx) => (
+            <motion.div
+              key={q.id}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+            >
+              <Card className="p-6">
+                <div className="flex items-start gap-2 mb-6">
+                  <span className="text-neutral-400 font-mono mt-1">
+                    {idx + 1}.
+                  </span>
+                  <h3 className="text-xl font-medium">
+                    {q.text}
+                    {q.required && <span className="text-red-500 ml-1">*</span>}
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  {q.type === "multiple_choice" && (
+                    <div className="space-y-2">
+                      {q.options.map((opt, i) => (
+                        <label
+                          key={i}
+                          className="flex items-center gap-3 p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            value={opt}
+                            checked={getSelectedOptions(answers[q.id]).includes(
+                              opt,
+                            )}
+                            onChange={(e) => {
+                              const currentSelection = getSelectedOptions(
+                                answers[q.id],
+                              );
+                              handleAnswerChange(
+                                q.id,
+                                toggleOptionSelection(
+                                  currentSelection,
+                                  opt,
+                                  e.target.checked,
+                                ),
+                              );
+                            }}
+                            className="w-4 h-4 rounded text-indigo-600"
+                          />
+                          <span>{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {q.type === "checkbox" && (
+                    <div className="space-y-2">
+                      {q.options.map((opt, i) => (
+                        <label
+                          key={i}
+                          className="flex items-center gap-3 p-3 rounded-lg border border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="radio"
+                            name={`single-select-${q.id}`}
+                            value={opt}
+                            checked={answers[q.id] === opt}
+                            onChange={() => handleAnswerChange(q.id, opt)}
+                            className="w-4 h-4 text-indigo-600"
+                          />
+                          <span>{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {q.type === "short_answer" && (
+                    <textarea
+                      className="w-full rounded-md border border-neutral-200 p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                      rows={3}
+                      placeholder="Type your answer here..."
+                      value={answers[q.id] || ""}
+                      onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                      required={q.required}
+                    />
+                  )}
+
+                  {q.type === "rating" && (
+                    <div className="flex flex-wrap sm:flex-nowrap  justify-between gap-2">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => handleAnswerChange(q.id, n)}
+                          className={`flex-1 py-4 min-w-12 rounded-xl border-2 transition-all font-bold ${
+                            answers[q.id] === n
+                              ? "border-indigo-600 bg-indigo-50 text-indigo-600"
+                              : "border-neutral-100 hover:border-neutral-200 text-neutral-400"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              show: { opacity: 1, y: 0 },
+            }}
+          >
+            <Button
+              type="submit"
+              disabled={isSubmitting || (isOwnerPreview && !token)}
+              className="w-full py-6 text-xl rounded-xl shadow-lg shadow-indigo-200"
+            >
+              {isOwnerPreview && !token ? "Preview Mode" : "Submit Survey"}
+            </Button>
+          </motion.div>
+        </motion.div>
       </form>
     </div>
   );

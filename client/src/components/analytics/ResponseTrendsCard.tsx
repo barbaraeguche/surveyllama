@@ -16,8 +16,8 @@ const DATE_RANGE_OPTIONS: Array<{
   value: AnalyticsDateRange;
   label: string;
 }> = [
-  { value: "7d", label: "Last 7 Days" },
-  { value: "30d", label: "Last 30 Days" },
+  { value: "7d", label: "7 Days" },
+  { value: "30d", label: "30 Days" },
   { value: "all", label: "All Time" },
   { value: "custom", label: "Custom" },
 ];
@@ -46,8 +46,8 @@ export default function ResponseTrendsCard({
   }
 
   return (
-    <Card className="p-8 mb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <Card className="p-5 sm:p-8 mb-10">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
         <div>
           <h2 className="text-xl font-bold">Response Trends</h2>
           <p className="text-sm text-neutral-500">
@@ -55,13 +55,13 @@ export default function ResponseTrendsCard({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex bg-neutral-100 p-1 rounded-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex bg-neutral-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
             {DATE_RANGE_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 onClick={() => onDateRangeChange(option.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md transition-all whitespace-nowrap flex-1 sm:flex-none ${
                   dateRange === option.value
                     ? "bg-white text-indigo-600 shadow-sm"
                     : "text-neutral-500 hover:text-neutral-700"
@@ -76,20 +76,20 @@ export default function ResponseTrendsCard({
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <Input
                 type="date"
                 value={customStart}
                 onChange={(event) => onCustomStartChange(event.target.value)}
-                className="h-8 text-xs py-1"
+                className="h-8 text-xs py-1 flex-1"
               />
               <span className="text-neutral-400 text-xs">to</span>
               <Input
                 type="date"
                 value={customEnd}
                 onChange={(event) => onCustomEndChange(event.target.value)}
-                className="h-8 text-xs py-1"
+                className="h-8 text-xs py-1 flex-1"
               />
             </motion.div>
           )}

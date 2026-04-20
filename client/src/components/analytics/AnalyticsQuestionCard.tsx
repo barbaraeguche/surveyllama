@@ -123,13 +123,13 @@ export default function AnalyticsQuestionCard({
   index,
 }: AnalyticsQuestionCardProps) {
   return (
-    <Card key={question.id} className="p-8 flex flex-col min-w-0">
+    <Card key={question.id} className="p-5 sm:p-8 flex flex-col min-w-0">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">
             Question {index + 1}
           </span>
-          <span className="text-xs text-neutral-400">
+          <span className="text-xs text-neutral-400 uppercase font-bold tracking-wider">
             • {formatQuestionTypeLabel(question.type)}
           </span>
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Button } from "../components/UI";
-import { CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ArrowLeft } from "lucide-react";
 import {
   Question,
   QuestionType,
@@ -9,7 +9,9 @@ import {
   SurveySettings,
   SurveyUpsertPayload,
 } from "../types";
-import { Reorder } from "motion/react";
+import { Reorder, AnimatePresence } from "motion/react";
+import { LoadingSpinner } from "../components/LoadingState";
+import { Banner } from "../components/Banner";
 import { surveyService } from "../services/surveyService";
 import SurveyBasicsCard from "../components/survey-builder/SurveyBasicsCard";
 import SurveySettingsCard from "../components/survey-builder/SurveySettingsCard";
@@ -21,7 +23,7 @@ const DEFAULT_THANK_YOU_MESSAGE = "Thank you for participating in our survey!";
 /** Matches unchanged auto-generated option labels such as "Option 1", "Option 12". */
 const PLACEHOLDER_OPTION_PATTERN = /^Option \d+$/i;
 
-/** 
+/**
  * Strips all HTML tags from a string to prevent stored XSS.
  * @param value - The string to sanitize.
  * @returns A sanitized string with HTML tags removed.
@@ -305,11 +307,10 @@ export default function CreateSurvey() {
     }
   };
 
-  if (loading)
-    return <div className="text-center py-20">Loading survey data...</div>;
+  if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="max-w-4xl mx-auto pb-20">
+    <div className="max-w-4xl mx-auto pb-20 px-4 sm:px-6">
       <Link
         to="/dashboard"
         className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors"
@@ -318,14 +319,14 @@ export default function CreateSurvey() {
         Back to Dashboard
       </Link>
 
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
           {isEdit ? "Edit Survey" : "Create New Survey"}
         </h1>
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || isPublishedSurvey}
-          className="px-8 flex gap-2"
+          className="w-full sm:w-autopx-8 flex gap-2"
         >
           {isSubmitting ? (
             "Saving..."
@@ -338,12 +339,15 @@ export default function CreateSurvey() {
         </Button>
       </div>
 
-      {error && (
-        <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
-          <AlertCircle size={20} />
-          <p>{error}</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <Banner 
+            message={error} 
+            onClose={() => setError('')} 
+            className="mb-8"
+          />
+        )}
+      </AnimatePresence>
 
       <SurveyBasicsCard
         title={formState.title}
@@ -394,18 +398,27 @@ export default function CreateSurvey() {
           }
           className="space-y-6"
         >
-          {formState.questions.map((question) => (
-            <Reorder.Item key={question.id} value={question}>
-              <QuestionEditorCard
-                question={question}
-                onQuestionChange={updateQuestion}
-                onRemoveQuestion={removeQuestion}
-                onAddOption={addOption}
-                onUpdateOption={updateOption}
-                onRemoveOption={removeOption}
-              />
-            </Reorder.Item>
-          ))}
+          <AnimatePresence initial={false}>
+            {formState.questions.map((question) => (
+              <Reorder.Item
+                key={question.id}
+                value={question}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <QuestionEditorCard
+                  question={question}
+                  onQuestionChange={updateQuestion}
+                  onRemoveQuestion={removeQuestion}
+                  onAddOption={addOption}
+                  onUpdateOption={updateOption}
+                  onRemoveOption={removeOption}
+                />
+              </Reorder.Item>
+            ))}
+          </AnimatePresence>
         </Reorder.Group>
 
         <QuestionTypeActions onAddQuestion={addQuestion} />

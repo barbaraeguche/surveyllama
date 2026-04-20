@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import {
   CheckSquare,
   Calendar,
-  MessageSquare,
   Users,
   ArrowLeft,
 } from "lucide-react";
@@ -13,8 +12,10 @@ import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard
 import ResponseTrendsCard from "../components/analytics/ResponseTrendsCard";
 import { surveyService } from "../services/surveyService";
 import { AnalyticsDateRange, AnalyticsTrend, SurveyAnalytics } from "../types";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { LoadingSpinner } from "../components/LoadingState";
+import { ErrorState } from '../components/ErrorState';
+import { Badge } from '../components/Badge';
 
 function getStartDate(
   dateRange: AnalyticsDateRange,
@@ -203,12 +204,10 @@ export default function Analytics() {
     return <div className="text-center py-20 text-red-500">{error}</div>;
   }
 
-  if (!analytics) {
-    return <div className="text-center py-20">No data available.</div>;
-  }
+  if (!analytics) return <ErrorState message="Could not load analytics data. Please try again later."/>;
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 px-4">
+    <div className="max-w-6xl mx-auto pb-20 px-4 sm:px-6">
       <Link
         to="/dashboard"
         className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors"
@@ -216,16 +215,23 @@ export default function Analytics() {
         <ArrowLeft size={18} />
         Back to Dashboard
       </Link>
-      <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2">
+      <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="grow">
+          <div className="flex items-center gap-3 mb-2">
+
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
             {analytics.survey.title}
           </h1>
-          <p className="text-neutral-500 max-w-2xl">
+          <Badge color={analytics.survey.is_published ? "green" : "yellow"}  className="mt-1">
+            {analytics.survey.is_published ? "Published" : "Draft"}
+          </Badge>
+
+          </div>
+          <p className="text-neutral-500 max-w-2xl text-sm sm:text-base">
             {analytics.survey.description}
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-semibold">
+        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold self-start lg:self-end shrink-0">
           <Users size={16} />
           {analytics.totalResponses} Total Responses
         </div>

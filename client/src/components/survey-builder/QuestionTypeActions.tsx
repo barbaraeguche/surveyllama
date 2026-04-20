@@ -19,9 +19,10 @@ export default function QuestionTypeActions({
   onAddQuestion,
 }: QuestionTypeActionsProps) {
   return (
-    <div className="flex flex-wrap gap-3 justify-center pt-8">
+    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 justify-center pt-8">
       {QUESTION_TYPE_ACTIONS.map((action) => (
         <Button
+          size="sm"
           key={action.type}
           type="button"
           onClick={() => onAddQuestion(action.type)}

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { Button, Card, Input } from "../components/UI";
 import {
   Upload,
@@ -13,12 +13,14 @@ import {
   Loader2,
   Plus,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { storage } from "../lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../contexts/AuthContext";
 import { surveyService } from "../services/surveyService";
 import { Survey } from "../types";
+import { LoadingSpinner } from "../components/LoadingState";
+import { Banner } from "../components/Banner";
 
 type StatusState = { type: "success" | "error"; message: string } | null;
 
@@ -31,7 +33,6 @@ type UploadDebugState = {
 
 export default function SendInvitations() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { user, token, loading: authLoading } = useAuth();
   const [emails, setEmails] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<
@@ -43,8 +44,34 @@ export default function SendInvitations() {
   const [manualEmail, setManualEmail] = useState("");
   const [status, setStatus] = useState<StatusState>(null);
   const [survey, setSurvey] = useState<Survey | null>(null);
+  const [isSurveyLoading, setIsSurveyLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const loadSurvey = async () => {
+      if (!id) {
+        setStatus({ type: "error", message: "Survey ID is missing." });
+        setIsSurveyLoading(false);
+        return;
+      }
+
+      setIsSurveyLoading(true);
+
+      const { data, error } = await surveyService.getById(id);
+
+      if (error) {
+        setStatus({ type: "error", message: error });
+        setSurvey(null);
+      } else {
+        setSurvey(data ?? null);
+      }
+
+      setIsSurveyLoading(false);
+    };
+
+    void loadSurvey();
+  }, [id]);
 
   const processEmails = (text: string) => {
     // Split by comma, newline, or semicolon and filter valid emails
@@ -158,7 +185,7 @@ export default function SendInvitations() {
   };
 
   const handleSend = async () => {
-    if (emails.length === 0) return;
+    if (emails.length === 0 || !survey?.is_published) return;
 
     setIsSending(true);
     setStatus(null);
@@ -203,8 +230,109 @@ export default function SendInvitations() {
     }
   };
 
+  if (isSurveyLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!survey) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors duration-200 ease-out"
+        >
+          <ArrowLeft size={18} />
+          Back to Dashboard
+        </Link>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: "easeOut" }}
+        >
+          <Card className="p-8">
+            <div className="overflow-hidden rounded-lg border-l-4 border-red-400 bg-red-50 p-4 ring-1 ring-inset ring-red-200">
+              <div className="flex items-start gap-3">
+                <AlertCircle
+                  size={20}
+                  className="mt-0.5 shrink-0 text-red-600"
+                />
+                <div>
+                  <h1 className="text-base font-semibold text-red-900">
+                    Survey unavailable
+                  </h1>
+                  <p className="mt-1 text-sm text-red-800">
+                    {status?.message ||
+                      "We couldn't load this survey right now. Return to the dashboard and try again."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (!survey.is_published) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors duration-200 ease-out"
+        >
+          <ArrowLeft size={18} />
+          Back to Dashboard
+        </Link>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: "easeOut" }}
+        >
+          <Card className="p-8">
+            <div className="overflow-hidden rounded-lg border-l-4 border-amber-400 bg-amber-50 p-4 ring-1 ring-inset ring-amber-200">
+              <div className="flex items-start gap-3">
+                <AlertCircle
+                  size={20}
+                  className="mt-0.5 shrink-0 text-amber-600"
+                />
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-base font-semibold text-amber-900">
+                    Publish this survey before sending invitations
+                  </h1>
+                  <p className="mt-1 text-sm text-amber-800">
+                    {`"${survey.title}"`} is still in draft mode. Publish it
+                    from the dashboard to unlock email invitations, then come
+                    back here to send them.
+                  </p>
+                  {status && status.type === "error" && (
+                    <p className="mt-3 text-sm text-red-700">
+                      {status.message}
+                    </p>
+                  )}
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <Link to="/dashboard">
+                      <Button className="transition-all duration-200 ease-out">
+                        Back to Dashboard
+                      </Button>
+                    </Link>
+                    <p className="self-center text-sm text-amber-700">
+                      After publishing, the invite form will be available
+                      immediately.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <Link
         to="/dashboard"
         className="flex items-center gap-2 text-neutral-500 hover:text-neutral-900 mb-6 transition-colors"
@@ -292,67 +420,6 @@ export default function SendInvitations() {
               </div>
             </div>
           </Card>
-
-          <Card className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Paperclip size={20} className="text-indigo-600" />
-                Attachments
-              </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex gap-2"
-                onClick={() => attachmentInputRef.current?.click()}
-                disabled={isUploading || authLoading || !user?.uid}
-              >
-                {isUploading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Plus size={16} />
-                )}
-                Attach File
-              </Button>
-              <input
-                type="file"
-                ref={attachmentInputRef}
-                onChange={handleFileAttachment}
-                className="hidden"
-              />
-            </div>
-
-            {attachments.length === 0 ? (
-              <div className="py-8 text-center text-neutral-400 border border-dashed border-neutral-100 rounded-lg text-sm">
-                No files attached.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {attachments.map((file, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between bg-neutral-50 p-3 rounded-lg border border-neutral-100"
-                  >
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <FileText
-                        size={16}
-                        className="text-neutral-400 shrink-0"
-                      />
-                      <span className="text-sm text-neutral-700 truncate">
-                        {file.filename}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => removeAttachment(idx)}
-                      className="text-neutral-400 hover:text-red-600 transition-colors ml-2"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
@@ -392,21 +459,82 @@ export default function SendInvitations() {
               </div>
             )}
           </Card>
+          <Card className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Paperclip size={20} className="text-indigo-600" />
+                Attachments
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex gap-2"
+                onClick={() => attachmentInputRef.current?.click()}
+                disabled={isUploading || authLoading || !user?.uid}
+              >
+                {isUploading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Plus size={16} />
+                )}
+                Attach File
+              </Button>
+              <input
+                type="file"
+                ref={attachmentInputRef}
+                onChange={handleFileAttachment}
+                className="hidden"
+              />
+            </div>
+
+            {attachments.length === 0 ? (
+              <div className="py-8 text-center text-neutral-400 border border-dashed border-neutral-100 rounded-lg ">
+                No files attached.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {attachments.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between bg-neutral-50 p-3 rounded-lg border border-neutral-100"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <FileText
+                        size={16}
+                        className="text-neutral-400 shrink-0"
+                      />
+                      <span className="text-sm text-neutral-700 truncate">
+                        {file.filename}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(idx)}
+                      className="text-neutral-400 hover:text-red-600 transition-colors ml-2"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
         </div>
 
         <div className="space-y-6">
           <Card className="p-6 sticky top-24">
-            <h2 className="text-lg font-bold mb-4">Send Invitations</h2>
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Send Invitations
+            </h2>
 
             <div className="space-y-4">
-              <div>
+              {/* <div>
                 <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">
                   Survey Link
                 </label>
                 <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-xs font-mono break-all text-neutral-600">
                   {window.location.origin}/survey/{id}
                 </div>
-              </div>
+              </div> */}
 
               <div className="pt-4">
                 <Button
@@ -424,25 +552,16 @@ export default function SendInvitations() {
                   )}
                 </Button>
               </div>
-
-              {status && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-lg flex items-start gap-3 ${
-                    status.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-100"
-                      : "bg-red-50 text-red-700 border border-red-100"
-                  }`}
-                >
-                  {status.type === "success" ? (
-                    <CheckCircle size={18} className="shrink-0" />
-                  ) : (
-                    <AlertCircle size={18} className="shrink-0" />
-                  )}
-                  <p className="text-sm">{status.message}</p>
-                </motion.div>
-              )}
+              <AnimatePresence>
+                {status && (
+                  <Banner
+                    message={status.message}
+                    type={status.type}
+                    onClose={() => setStatus(null)}
+                    className="mt-6"
+                  />
+                )}
+              </AnimatePresence>
             </div>
           </Card>
         </div>

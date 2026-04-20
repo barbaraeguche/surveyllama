@@ -18,7 +18,7 @@ export default function SurveyBasicsCard({
   onExpiryDateChange,
 }: SurveyBasicsCardProps) {
   return (
-    <Card className="p-8 mb-8 space-y-6">
+    <Card className="p-6 sm:p-8 mb-8 space-y-6">
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
           Survey Title

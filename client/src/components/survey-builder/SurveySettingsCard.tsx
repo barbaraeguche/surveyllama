@@ -15,7 +15,7 @@ export default function SurveySettingsCard({
   onThankYouMessageChange,
 }: SurveySettingsCardProps) {
   return (
-    <Card className="p-8 mb-8">
+    <Card className="p-6 sm:p-8 mb-8">
       <h2 className="text-xl font-bold mb-6">Survey Settings</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
