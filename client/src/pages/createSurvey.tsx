@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { Button } from "../components/UI";
+import { Button } from "../components/ui";
 import { CheckCircle2, ArrowLeft } from "lucide-react";
 import {
   Question,
@@ -10,13 +10,13 @@ import {
   SurveyUpsertPayload,
 } from "../types";
 import { Reorder, AnimatePresence } from "motion/react";
-import { LoadingSpinner } from "../components/LoadingState";
-import { Banner } from "../components/Banner";
+import { LoadingSpinner } from "../components/loadingState";
+import { Banner } from "../components/banner";
 import { surveyService } from "../services/surveyService";
-import SurveyBasicsCard from "../components/survey-builder/SurveyBasicsCard";
-import SurveySettingsCard from "../components/survey-builder/SurveySettingsCard";
-import QuestionEditorCard from "../components/survey-builder/QuestionEditorCard";
-import QuestionTypeActions from "../components/survey-builder/QuestionTypeActions";
+import SurveyBasicsCard from "../components/survey-builder/surveyBasicsCard";
+import SurveySettingsCard from "../components/survey-builder/surveySettingsCard";
+import QuestionEditorCard from "../components/survey-builder/questionEditorCard";
+import QuestionTypeActions from "../components/survey-builder/questionTypeActions";
 
 const DEFAULT_THANK_YOU_MESSAGE = "Thank you for participating in our survey!";
 

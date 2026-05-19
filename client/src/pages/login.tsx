@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Card } from "../components/UI";
+import { Button, Input, Card } from "../components/ui";
 import { motion } from "motion/react";
 import { auth, googleProvider } from "../lib/firebase";
 import {
@@ -8,7 +8,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
-import { Banner } from '../components/Banner';
+import { Banner } from '../components/banner';
 import { AnimatePresence } from 'motion/react';
 
 function getErrorMessage(error: unknown): string {

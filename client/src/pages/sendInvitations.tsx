@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Button, Card, Input } from "../components/UI";
+import { Button, Card, Input } from "../components/ui";
 import {
   Upload,
   Mail,
@@ -16,11 +16,11 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { storage } from "../lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/authContext";
 import { surveyService } from "../services/surveyService";
 import { Survey } from "../types";
-import { LoadingSpinner } from "../components/LoadingState";
-import { Banner } from "../components/Banner";
+import { LoadingSpinner } from "../components/loadingState";
+import { Banner } from "../components/banner";
 
 type StatusState = { type: "success" | "error"; message: string } | null;
 

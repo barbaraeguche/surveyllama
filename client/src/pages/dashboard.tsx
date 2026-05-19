@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card } from "../components/UI";
+import { Button, Card } from "../components/ui";
 import {
   Plus,
   BarChart3,
@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 import { Survey } from "../types";
 import { surveyService } from "../services/surveyService";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/authContext";
 import { AnimatePresence, motion } from "motion/react";
-import { LoadingSpinner } from "../components/LoadingState";
-import { Banner } from "../components/Banner";
-import { Badge } from "../components/Badge";
-import { Modal } from "../components/Modal";
+import { LoadingSpinner } from "../components/loadingState";
+import { Banner } from "../components/banner";
+import { Badge } from "../components/badge";
+import { Modal } from "../components/modal";
 
 export default function Dashboard() {
   const { user } = useAuth();

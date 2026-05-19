@@ -1,4 +1,4 @@
-import { Button } from "../UI";
+import { Button } from "../ui";
 import { QuestionType } from "../../types";
 
 const QUESTION_TYPE_ACTIONS: Array<{

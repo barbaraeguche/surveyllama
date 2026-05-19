@@ -7,15 +7,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-import StatCard from "../components/StatCard";
-import AnalyticsQuestionCard from "../components/analytics/AnalyticsQuestionCard";
-import ResponseTrendsCard from "../components/analytics/ResponseTrendsCard";
+import StatCard from "../components/statCard";
+import AnalyticsQuestionCard from "../components/analytics/analyticsQuestionCard";
+import ResponseTrendsCard from "../components/analytics/responseTrendsCard";
 import { surveyService } from "../services/surveyService";
 import { AnalyticsDateRange, AnalyticsTrend, SurveyAnalytics } from "../types";
 import { motion } from "motion/react";
-import { LoadingSpinner } from "../components/LoadingState";
-import { ErrorState } from '../components/ErrorState';
-import { Badge } from '../components/Badge';
+import { LoadingSpinner } from "../components/loadingState";
+import { ErrorState } from '../components/errorState';
+import { Badge } from '../components/badge';
 
 function getStartDate(
   dateRange: AnalyticsDateRange,

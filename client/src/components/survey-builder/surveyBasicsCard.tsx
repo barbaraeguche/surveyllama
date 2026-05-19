@@ -1,4 +1,4 @@
-import { Card, Input } from "../UI";
+import { Card, Input } from "../ui";
 
 type SurveyBasicsCardProps = {
   title: string;

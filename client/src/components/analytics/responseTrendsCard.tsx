@@ -9,7 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { Card, Input } from "../UI";
+import { Card, Input } from "../ui";
 import { AnalyticsDateRange, AnalyticsTrend } from "../../types";
 
 const DATE_RANGE_OPTIONS: Array<{
