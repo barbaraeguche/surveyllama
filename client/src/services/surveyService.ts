@@ -1,90 +1,54 @@
-import { apiRequest } from '@/client/lib/api';
-import { Survey, SurveyAnalytics, SurveyUpsertPayload } from '@/client/types';
+import { apiRequest } from "@/client/lib/api";
+import { Survey, SurveyAnalytics, SurveyUpsertPayload } from "@/client/types";
 
 type SurveyAnswerValue = string | number | boolean | string[] | null;
 
-/**
- * Service for interacting with the survey API.
- */
 export const surveyService = {
-  /**
-   * Fetches all surveys for the current user.
-   */
   async getAll() {
-    return apiRequest<Survey[]>('/api/surveys');
+    return apiRequest<Survey[]>("/api/surveys");
   },
-
-  /**
-   * Fetches a single survey by ID.
-   * @param id - The survey ID.
-   */
+  
   async getById(id: string) {
     return apiRequest<Survey>(`/api/surveys/${id}`);
   },
-
-  /**
-   * Creates a new survey.
-   * @param surveyData - The survey data.
-   */
-  async create(surveyData: SurveyUpsertPayload) {
-    return apiRequest<{ id: string }>('/api/surveys', {
-      method: 'POST',
-      body: JSON.stringify(surveyData),
+  
+  async create(data: SurveyUpsertPayload) {
+    return apiRequest<{ id: string }>("/api/surveys", {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   },
-
-  /**
-   * Publishes a survey.
-   * @param id - The survey ID.
-   */
+  
   async publish(id: string) {
-    return apiRequest(`/api/surveys/${id}/publish`, { method: 'PATCH' });
+    return apiRequest(`/api/surveys/${id}/publish`, { method: "PATCH" });
   },
-
-  /**
-   * Unpublishes a survey.
-   * @param id - The survey ID.
-   */
+  
   async unpublish(id: string) {
-    return apiRequest(`/api/surveys/${id}/unpublish`, { method: 'PATCH' });
+    return apiRequest(`/api/surveys/${id}/unpublish`, { method: "PATCH" });
   },
-
-  /**
-   * Updates an existing survey.
-   * @param id - The survey ID.
-   * @param surveyData - The updated survey data.
-   */
-  async update(id: string, surveyData: SurveyUpsertPayload) {
+  
+  async update(id: string, data: SurveyUpsertPayload) {
     return apiRequest(`/api/surveys/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(surveyData),
+      method: "PUT",
+      body: JSON.stringify(data),
     });
   },
-
-  /**
-   * Deletes a survey.
-   * @param id - The survey ID.
-   */
+  
   async delete(id: string) {
-    return apiRequest(`/api/surveys/${id}`, { method: 'DELETE' });
+    return apiRequest(`/api/surveys/${id}`, { method: "DELETE" });
   },
-
-  /**
-   * Submits a response to a survey.
-   * @param surveyId - The survey ID.
-   * @param responseData - The response data.
-   */
-  async submitResponse(surveyId: string, responseData: { email: string; answers: Record<string, SurveyAnswerValue>; token?: string | null }) {
-    return apiRequest(`/api/surveys/${surveyId}/responses`, {
-      method: 'POST',
-      body: JSON.stringify(responseData),
+  
+  async submitResponse(id: string, data: {
+    email: string;
+    answers: Record<string, SurveyAnswerValue>;
+    token?: string | null
+  }) {
+    return apiRequest(`/api/surveys/${id}/responses`, {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   },
-
-  /**
-   * Fetches analytics for a survey.
-   * @param id - The survey ID.
-   */
+  
   async getAnalytics(id: string) {
     return apiRequest<SurveyAnalytics>(`/api/surveys/${id}/analytics`);
   }
