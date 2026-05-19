@@ -1,5 +1,5 @@
-import { apiRequest } from '../lib/api';
-import { Survey, SurveyAnalytics, SurveyUpsertPayload } from '../types';
+import { apiRequest } from '@/client/lib/api';
+import { Survey, SurveyAnalytics, SurveyUpsertPayload } from '@/client/types';
 
 type SurveyAnswerValue = string | number | boolean | string[] | null;
 

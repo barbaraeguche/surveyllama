@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Button } from '../components/ui';
+import { Button } from '@/client/components/ui';
 import { motion } from 'motion/react';
 import { ArrowLeft, Home, Search } from 'lucide-react';
 

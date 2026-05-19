@@ -7,9 +7,9 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useAuth } from "../contexts/authContext";
+import { useAuth } from "@/client/contexts/authContext";
 import { motion, AnimatePresence } from "motion/react";
-import { cn } from "../lib/utils.ts";
+import { cn } from "@/client/lib/utils.ts";
 
 export default function Navbar() {
   const { user, token, logout } = useAuth();

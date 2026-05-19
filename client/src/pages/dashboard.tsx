@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button, Card } from "../components/ui";
+import { Button, Card } from "@/client/components/ui";
 import {
   Plus,
   BarChart3,
@@ -12,14 +12,14 @@ import {
   PowerOff,
   Mail,
 } from "lucide-react";
-import { Survey } from "../types";
-import { surveyService } from "../services/surveyService";
-import { useAuth } from "../contexts/authContext";
+import { Survey } from "@/client/types";
+import { surveyService } from "@/client/services/surveyService";
+import { useAuth } from "@/client/contexts/authContext";
 import { AnimatePresence, motion } from "motion/react";
-import { LoadingSpinner } from "../components/loadingState";
-import { Banner } from "../components/banner";
-import { Badge } from "../components/badge";
-import { Modal } from "../components/modal";
+import { LoadingSpinner } from "@/client/components/loadingState";
+import { Banner } from "@/client/components/banner";
+import { Badge } from "@/client/components/badge";
+import { Modal } from "@/client/components/modal";
 
 export default function Dashboard() {
   const { user } = useAuth();

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { AlertCircle, X } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn } from '@/client/lib/utils';
 
 interface BannerProps {
   message: string;

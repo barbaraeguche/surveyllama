@@ -1,7 +1,7 @@
 import { GripVertical, Trash2 } from "lucide-react";
 
-import { Card, Button, Input } from "../ui";
-import { Question } from "../../types";
+import { Card, Button, Input } from "@/client/components/ui";
+import { Question } from "@/client/types";
 
 const RATING_SCALE_VALUES = [1, 2, 3, 4, 5];
 

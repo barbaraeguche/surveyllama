@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
-import { Button, Card } from './ui';
+import { Button, Card } from '@/client/components/ui';
 import { Link } from 'react-router-dom';
 
 interface ErrorStateProps {

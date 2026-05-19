@@ -1,4 +1,4 @@
-import { logger } from './logger';
+import { logger } from '@/client/lib/logger';
 
 interface ApiErrorPayload {
   error?: string;

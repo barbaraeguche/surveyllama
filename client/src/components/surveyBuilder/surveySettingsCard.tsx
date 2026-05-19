@@ -1,5 +1,5 @@
-import { Card } from "../ui";
-import { QuestionDisplayOrder, SurveySettings } from "../../types";
+import { Card } from "@/client/components/ui";
+import { QuestionDisplayOrder, SurveySettings } from "@/client/types";
 
 type SurveySettingsCardProps = {
   settings: SurveySettings;

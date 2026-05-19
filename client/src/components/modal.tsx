@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, Info, CheckCircle, AlertCircle, X } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { Button } from './ui';
+import { cn } from '@/client/lib/utils';
+import { Button } from '@/client/components/ui';
 
 interface ModalProps {
   isOpen: boolean;

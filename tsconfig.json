@@ -19,8 +19,8 @@
       "vite/client"
     ],
     "paths": {
-      "@/*": [
-        "./*"
+      "@/client/*": [
+        "./client/src/*"
       ]
     },
     "allowImportingTsExtensions": true,

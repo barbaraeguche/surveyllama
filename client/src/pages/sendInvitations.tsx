@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Button, Card, Input } from "../components/ui";
+import { Button, Card, Input } from "@/client/components/ui";
 import {
   Upload,
   Mail,
@@ -14,13 +14,13 @@ import {
   Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { storage } from "../lib/firebase";
+import { storage } from "@/client/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useAuth } from "../contexts/authContext";
-import { surveyService } from "../services/surveyService";
-import { Survey } from "../types";
-import { LoadingSpinner } from "../components/loadingState";
-import { Banner } from "../components/banner";
+import { useAuth } from "@/client/contexts/authContext";
+import { surveyService } from "@/client/services/surveyService";
+import { Survey } from "@/client/types";
+import { LoadingSpinner } from "@/client/components/loadingState";
+import { Banner } from "@/client/components/banner";
 
 type StatusState = { type: "success" | "error"; message: string } | null;
 

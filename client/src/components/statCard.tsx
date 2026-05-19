@@ -1,4 +1,4 @@
-import { Card } from "./ui";
+import { Card } from "@/client/components/ui";
 
 export default function StatCard({
   label,

@@ -1,5 +1,5 @@
-import { Button } from "../ui";
-import { QuestionType } from "../../types";
+import { Button } from "@/client/components/ui";
+import { QuestionType } from "@/client/types";
 
 const QUESTION_TYPE_ACTIONS: Array<{
   label: string;
