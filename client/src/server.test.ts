@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from "express";
+import request from "supertest";
+import { describe, expect, it, vi } from "vitest";
+import { app } from "../../server";
 
 const { firestoreInstance } = vi.hoisted(() => ({
   firestoreInstance: {
@@ -36,7 +37,7 @@ const { firestoreInstance } = vi.hoisted(() => ({
 }));
 
 // Mock firebase-admin before importing app
-vi.mock('firebase-admin', () => ({
+vi.mock("firebase-admin", () => ({
   default: {
     apps: [],
     initializeApp: vi.fn(),
@@ -54,24 +55,22 @@ vi.mock('firebase-admin', () => ({
   },
 }));
 
-// Mock vite since it might be imported in server.ts
-vi.mock('vite', () => ({
+// mock vite since it might be imported in server.ts
+vi.mock("vite", () => ({
   createServer: vi.fn(() => Promise.resolve({
     middlewares: (_req: Request, _res: Response, next: NextFunction) => next(),
   })),
 }));
 
-import { app } from '../../server';
-
-describe('Backend API', () => {
-  it('GET /api/health returns status ok', async () => {
-    const response = await request(app).get('/api/health');
+describe("Backend API", () => {
+  it("GET /api/health returns status ok", async () => {
+    const response = await request(app).get("/api/health");
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ status: 'ok' });
+    expect(response.body).toEqual({ status: "ok" });
   });
-
-  it('GET /api/surveys returns 401 without token', async () => {
-    const response = await request(app).get('/api/surveys');
+  
+  it("GET /api/surveys returns 401 without token", async () => {
+    const response = await request(app).get("/api/surveys");
     expect(response.status).toBe(401);
   });
 });
